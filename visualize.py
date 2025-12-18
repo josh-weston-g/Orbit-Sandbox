@@ -49,7 +49,6 @@ while running:
 
     # Adjust speed multiplier with up/down keys - allows for holding keys down
     keys = pygame.key.get_pressed()
-    current_speed = round
     if keys[pygame.K_UP]:
         speed_multiplier += 0.1
         if round(speed_multiplier) != last_printed_speed:
