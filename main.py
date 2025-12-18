@@ -90,7 +90,7 @@ def main():
     print("="*50)
     
     # Run the simulation
-    sim.run_continuous()
+    sim.run_and_log(num_steps=100000, log_interval=1000, filename="orbit_data.csv")
 
 if __name__ == "__main__":
     main()

@@ -62,6 +62,27 @@ class Simulation:
             print(f"\n{'='*60}")
             print(f"Simulation stopped at t={self.time:.2f} ({step_count} steps)")
             print(f"{'='*60}")
+
+    def run_and_log(self, num_steps, log_interval=10, filename="orbit_data.csv"):
+        """Run the simulation and log positions at specified intervals.
+        
+            param num_steps: total number of steps to run
+            param log_interval: log positions every N steps
+            returns: list of logged positions
+        """
+        with open(filename, 'w') as f:
+            f.write("time,x,y,vx,vy,distance,speed\n")
+
+            for i in range(num_steps):
+                self.step()
+                
+                if i % log_interval == 0:
+                    planet = self.bodies[1]  # Assume second body is planet
+                    distance = np.linalg.norm(planet.pos)
+                    speed = np.linalg.norm(planet.vel)
+                    f.write(f"{self.time},{planet.pos[0]},{planet.pos[1]},{planet.vel[0]},{planet.vel[1]},{distance},{speed}\n")
+
+        print(f"\nLogged {num_steps//log_interval} data points to '{filename}'")
     
     def get_positions(self):
         """Return current positions of all bodies."""
