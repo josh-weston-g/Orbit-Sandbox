@@ -205,3 +205,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Orbit-Sandbox ignore rules
+orbit_data.csv
+orbit_visualization.png

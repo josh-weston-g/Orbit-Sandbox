@@ -93,8 +93,8 @@ def main():
     """Set up and run the simulation."""
     # Create the system (choose one):
     # bodies, G = create_simple_system()      # Circular orbit
-    # bodies, G = create_elliptical_orbit()   # Elliptical orbit
-    bodies, G = create_escape_trajectory()   # Escape trajectory
+    bodies, G = create_elliptical_orbit()   # Elliptical orbit
+    # bodies, G = create_escape_trajectory()   # Escape trajectory
     
     # Simulation parameters
     dt = 0.01  # Time step
@@ -121,7 +121,7 @@ def main():
     print("="*50)
     
     # Run the simulation
-    sim.run_continuous(print_interval=10000)
+    sim.run_and_log(num_steps=1000000, log_interval=1000)
 
 if __name__ == "__main__":
     main()
