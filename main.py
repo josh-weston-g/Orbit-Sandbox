@@ -31,8 +31,8 @@ def create_simple_system():
 
     return [star, planet], G
 
-def create_decaying_orbit():
-    """Create a system where the planet spirals into the star."""
+def create_elliptical_orbit():
+    """Create a system with an elliptical orbit."""
     # Constants
     G = 1.0
 
@@ -47,11 +47,40 @@ def create_decaying_orbit():
     orbital_radius = 100.0
     planet_mass = 1.0
 
-    # Calculate orbital speed and reduce it for decay
-    speed = circular_orbit_velocity(star.mass, orbital_radius, G) * np.sqrt(2)
-    speed *= 1.2
+    # Calculate orbital speed and reduce it to create ellipse
+    speed = circular_orbit_velocity(star.mass, orbital_radius, G) * 0.7
 
-    # Place planet on x-axis, moving in +y direction for decaying orbit
+    # Place planet on x-axis, moving in +y direction
+    planet = Body(
+        position=[orbital_radius, 0],
+        velocity=[0, speed],
+        mass=planet_mass
+    )
+
+    return [star, planet], G
+
+def create_escape_trajectory():
+    """Create a system where the planet escapes to infinity."""
+    # Constants
+    G = 1.0
+
+    # Star at origin (stationary)
+    star = Body(
+        position=[0, 0],
+        velocity=[0, 0],
+        mass=1000
+    )
+
+    # Planet parameters
+    orbital_radius = 100.0
+    planet_mass = 1.0
+
+    # Calculate escape velocity and exceed it
+    circular_speed = circular_orbit_velocity(star.mass, orbital_radius, G)
+    escape_speed = circular_speed * np.sqrt(2)
+    speed = escape_speed * 1.2  # 20% above escape velocity
+
+    # Place planet on x-axis, moving in +y direction
     planet = Body(
         position=[orbital_radius, 0],
         velocity=[0, speed],
@@ -62,8 +91,10 @@ def create_decaying_orbit():
 
 def main():
     """Set up and run the simulation."""
-    # Create the system
-    bodies, G = create_decaying_orbit()
+    # Create the system (choose one):
+    # bodies, G = create_simple_system()      # Circular orbit
+    # bodies, G = create_elliptical_orbit()   # Elliptical orbit
+    bodies, G = create_escape_trajectory()   # Escape trajectory
     
     # Simulation parameters
     dt = 0.01  # Time step
@@ -90,7 +121,7 @@ def main():
     print("="*50)
     
     # Run the simulation
-    sim.run_and_log(num_steps=100000, log_interval=1000, filename="orbit_data.csv")
+    sim.run_continuous(print_interval=10000)
 
 if __name__ == "__main__":
     main()
