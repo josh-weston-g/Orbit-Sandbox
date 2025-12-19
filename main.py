@@ -5,12 +5,18 @@ from visualize import run_visualization
 from systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory
 import argparse
 
-def main():
+def main(scenario):
     """Set up and run the simulation."""
-    # Create the system (choose one):
-    # bodies, G = create_simple_system()      # Circular orbit
-    bodies, G = create_elliptical_orbit()   # Elliptical orbit
-    # bodies, G = create_escape_trajectory()   # Escape trajectory
+    # Map scenario string to factory functions
+    scenario_map = {
+        'circular': create_simple_system,
+        'elliptical': create_elliptical_orbit,
+        'escape': create_escape_trajectory
+    }
+
+    # Get factory function and create system
+    factory = scenario_map[scenario]
+    bodies, G = factory()
     
     # Simulation parameters
     dt = 0.01  # Time step
@@ -20,7 +26,7 @@ def main():
     
     # Print initial conditions
     print("="*50)
-    print("Orbit Simulation - Simple Star-Planet System")
+    print(f"Orbit Simulation - {scenario.title()} Orbit")
     print("="*50)
     print(f"\nStar:")
     print(f"  Mass: {bodies[0].mass}")
@@ -41,9 +47,13 @@ def main():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Orbit Simulation Sandbox. Run different orbital scenarios which conform to a correct Newtonian physics model.")
+    parser.add_argument('--scenario', type=str, choices=['circular', 'elliptical', 'escape'], help='Choose the orbital scenario: circular, elliptical, or escape.')
     parser.add_argument('--visualize', action='store_true', help='Run the visualization instead of console simulation.')
     args = parser.parse_args()
     if args.visualize:
-        run_visualization()
+        run_visualization(args.scenario)
     else:
-        main()
+        # Console mode: scenario is required
+        if args.scenario is None:
+            parser.error("the following arguments are required: --scenario when not using --visualize")
+        main(args.scenario)

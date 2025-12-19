@@ -3,8 +3,22 @@ from simulation import Simulation
 from body import Body
 from systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory
 
-def run_visualization():
+def run_visualization(scenario):
     """Run the orbit simulation visualization using Pygame."""
+    # If no scenario provided, show menu to choose one
+    if scenario is None:
+        pass
+    
+    # Map scenario string to factory functions
+    scenario_map = {
+        'circular': create_simple_system,
+        'elliptical': create_elliptical_orbit,
+        'escape': create_escape_trajectory
+    }
+    # Get factory function and create system
+    factory = scenario_map[scenario]
+    bodies, G = factory()
+
     # Initialize Pygame
     pygame.init()
 
@@ -23,7 +37,6 @@ def run_visualization():
     last_printed_speed = round(speed_multiplier)
 
     # Create the physics simulation
-    bodies, G = create_elliptical_orbit()
     sim = Simulation(bodies, G=G, dt=0.01)
     planet = bodies[1]
     star = bodies[0]
