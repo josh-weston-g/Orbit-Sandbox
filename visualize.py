@@ -99,6 +99,7 @@ def run_visualization(scenario):
     clock = pygame.time.Clock()
     FPS = 60
     paused = False
+    scale = 1.0  # pixels per unit distance
 
     # Physics timing
     physics_dt = 0.01  # Must match sim.dt
@@ -140,6 +141,18 @@ def run_visualization(scenario):
                     pygame.quit()
                     run_visualization(None)  # Show menu again
                     return
+                elif event.key == pygame.K_EQUALS or event.key == pygame.K_KP_PLUS:
+                    scale *= 1.1
+                elif event.key == pygame.K_MINUS or event.key == pygame.K_KP_MINUS:
+                    scale = max(1/5, scale / 1.1)  # Prevent too much zoom out - stops when planets get to min size
+                
+            # Mouse wheel for zooming
+            if event.type == pygame.MOUSEWHEEL:
+                # Zoom in/out
+                if event.y > 0:
+                    scale *= 1.1
+                elif event.y < 0:
+                    scale = max(1/5, scale / 1.1)  # Prevent too much zoom out - stops when planets get to min size
 
         # Adjust speed multiplier with up/down keys - allows for holding keys down
         keys = pygame.key.get_pressed()
@@ -170,7 +183,6 @@ def run_visualization(scenario):
         # Physics: (0,0) is center, +x right, +y up
         # Screen: (0,0) is top-left, +x right, +y down
         center_x, center_y = 400, 300
-        scale = 1.0  # pixels per unit distance
         
         # Convert planet position
         planet_screen_x = center_x + (planet.pos[0] * scale)
@@ -189,12 +201,12 @@ def run_visualization(scenario):
         
         # Draw the trail
         if len(trail) > 1:
-            pygame.draw.lines(screen, (255, 255, 255), False, trail, 3)
+            pygame.draw.lines(screen, (255, 255, 255), False, trail, 1)
         
         # Draw the star
-        pygame.draw.circle(screen, (255, 255, 0), (int(star_screen_x), int(star_screen_y)), 15)
+        pygame.draw.circle(screen, (255, 255, 0), (int(star_screen_x), int(star_screen_y)), max(3, int(15 * scale)))
         # Draw the planet
-        pygame.draw.circle(screen, (255, 255, 255), (int(planet_screen_x), int(planet_screen_y)), 10)
+        pygame.draw.circle(screen, (255, 255, 255), (int(planet_screen_x), int(planet_screen_y)), max(1.2, int(6 * scale)))
 
         pygame.display.flip()  # Update the display
 
