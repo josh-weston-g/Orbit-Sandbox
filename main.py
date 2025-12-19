@@ -1,94 +1,9 @@
 import numpy as np
 from body import Body
 from simulation import Simulation
-from physics import circular_orbit_velocity
+from visualize import run_visualization
+from systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory
 import argparse
-
-def create_simple_system():
-    """Create a simple star-planet system with a circular orbit."""
-    # Constants
-    G = 1.0
-
-    # Star at origin (stationary)
-    star = Body(
-        position=[0, 0],
-        velocity=[0, 0],
-        mass=1000
-    )
-
-    # Planet parameters
-    orbital_radius = 100.0
-    planet_mass = 1.0
-
-    # Calculate orbital speed
-    speed = circular_orbit_velocity(star.mass, orbital_radius, G)
-
-    # Place planet on x-axis, moving in +y direction for circular orbit
-    planet = Body(
-        position=[orbital_radius, 0],
-        velocity=[0, speed],
-        mass=planet_mass
-    )
-
-    return [star, planet], G
-
-def create_elliptical_orbit():
-    """Create a system with an elliptical orbit."""
-    # Constants
-    G = 1.0
-
-    # Star at origin (stationary)
-    star = Body(
-        position=[0, 0],
-        velocity=[0, 0],
-        mass=1000
-    )
-
-    # Planet parameters
-    orbital_radius = 100.0
-    planet_mass = 1.0
-
-    # Calculate orbital speed and reduce it to create ellipse
-    speed = circular_orbit_velocity(star.mass, orbital_radius, G) * 0.7
-
-    # Place planet on x-axis, moving in +y direction
-    planet = Body(
-        position=[orbital_radius, 0],
-        velocity=[0, speed],
-        mass=planet_mass
-    )
-
-    return [star, planet], G
-
-def create_escape_trajectory():
-    """Create a system where the planet escapes to infinity."""
-    # Constants
-    G = 1.0
-
-    # Star at origin (stationary)
-    star = Body(
-        position=[0, 0],
-        velocity=[0, 0],
-        mass=1000
-    )
-
-    # Planet parameters
-    orbital_radius = 100.0
-    planet_mass = 1.0
-
-    # Calculate escape velocity and exceed it
-    circular_speed = circular_orbit_velocity(star.mass, orbital_radius, G)
-    escape_speed = circular_speed * np.sqrt(2)
-    speed = escape_speed * 1.2  # 20% above escape velocity
-
-    # Place planet on x-axis, moving in +y direction
-    planet = Body(
-        position=[orbital_radius, 0],
-        velocity=[0, speed],
-        mass=planet_mass
-    )
-
-    return [star, planet], G
 
 def main():
     """Set up and run the simulation."""
@@ -129,6 +44,6 @@ if __name__ == "__main__":
     parser.add_argument('--visualize', action='store_true', help='Run the visualization instead of console simulation.')
     args = parser.parse_args()
     if args.visualize:
-        print("Visualization mode is not implemented in this script yet. Please run visualize.py separately.")
+        run_visualization()
     else:
         main()
