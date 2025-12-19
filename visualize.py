@@ -201,7 +201,17 @@ def run_visualization(scenario):
         
         # Draw the trail
         if len(trail) > 1:
-            pygame.draw.lines(screen, (255, 255, 255), False, trail, 1)
+            # Create one surface for the entire trail
+            trail_surface = pygame.Surface((800, 600), pygame.SRCALPHA)
+            
+            # Draw all segments on it
+            for i in range(len(trail) - 1):
+                alpha = int(255 * (i + 1) / len(trail))
+                pygame.draw.line(trail_surface, (255, 255, 255, alpha), 
+                                trail[i], trail[i + 1], 1)
+            
+            # Blit surface onto main screen
+            screen.blit(trail_surface, (0, 0))
         
         # Draw the star
         pygame.draw.circle(screen, (255, 255, 0), (int(star_screen_x), int(star_screen_y)), max(3, int(15 * scale)))
