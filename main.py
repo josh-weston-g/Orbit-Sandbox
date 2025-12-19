@@ -2,6 +2,7 @@ import numpy as np
 from body import Body
 from simulation import Simulation
 from physics import circular_orbit_velocity
+import argparse
 
 def create_simple_system():
     """Create a simple star-planet system with a circular orbit."""
@@ -121,7 +122,13 @@ def main():
     print("="*50)
     
     # Run the simulation
-    sim.run_and_log(num_steps=1000000, log_interval=1000)
+    sim.run_continuous()
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Orbit Simulation Sandbox. Run different orbital scenarios which conform to a correct Newtonian physics model.")
+    parser.add_argument('--visualize', action='store_true', help='Run the visualization instead of console simulation.')
+    args = parser.parse_args()
+    if args.visualize:
+        print("Visualization mode is not implemented in this script yet. Please run visualize.py separately.")
+    else:
+        main()
