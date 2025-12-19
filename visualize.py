@@ -36,7 +36,7 @@ def show_menu():
         mouse_pos = pygame.mouse.get_pos()
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 pygame.quit()
                 return None # User closed window
             
@@ -97,7 +97,7 @@ def run_visualization(scenario):
 
     # Create a clock to control frame rate
     clock = pygame.time.Clock()
-    FPS = 280
+    FPS = 60
     paused = False
 
     # Physics timing
@@ -116,7 +116,7 @@ def run_visualization(scenario):
     max_trail_length = 50
 
     # Main loop
-    print("Controls: SPACE to pause/resume, UP/DOWN to adjust speed")
+    print("Controls: SPACE to pause/resume, UP/DOWN to adjust speed, R to reset, ESC to return to menu")
     print(f"Initial speed multiplier: {last_printed_speed}x")
     running = True
     while running:
@@ -130,7 +130,16 @@ def run_visualization(scenario):
                     paused = not paused
                 elif event.key == pygame.K_r:
                     # Reset simulation - to be added
-                    pass
+                    bodies, G = factory() # Recreate bodies from same factory
+                    sim = Simulation(bodies, G=G, dt=0.01) # New simulation
+                    planet = bodies[1]
+                    star = bodies[0]
+                    trail = [] # Clear trail
+                    print("Simulation reset.")
+                elif event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    run_visualization(None)  # Show menu again
+                    return
 
         # Adjust speed multiplier with up/down keys - allows for holding keys down
         keys = pygame.key.get_pressed()
