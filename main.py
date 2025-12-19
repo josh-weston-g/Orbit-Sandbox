@@ -41,6 +41,8 @@ def main(scenario):
     print(f"  dt: {dt}")
     print("\nPress Ctrl+C to stop the simulation\n")
     print("="*50)
+    input("Press Enter to start the simulation...")
+    print("="*50)
     
     # Run the simulation
     sim.run_continuous()
