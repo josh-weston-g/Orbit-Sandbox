@@ -3,11 +3,81 @@ from simulation import Simulation
 from body import Body
 from systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory
 
+def show_menu():
+    """Show a simple menu to choose orbital scenario. Returns scenario string or None."""
+    pygame.init()
+    screen = pygame.display.set_mode((600, 450))
+    pygame.display.set_caption("Orbit Simulator - Choose Scenario")
+
+    # Defin button rectangles (x, y, width, height)
+    button_width = 400
+    button_height = 60
+    button_x = 100 # Centered horizontally
+
+    buttons = {
+        'circular': pygame.Rect(button_x, 80, button_width, button_height),
+        'elliptical': pygame.Rect(button_x, 160, button_width, button_height),
+        'escape': pygame.Rect(button_x, 240, button_width, button_height),
+        'exit': pygame.Rect(button_x, 350, button_width, button_height)
+    }
+
+    # Button colors
+    button_color = (70, 70, 70)
+    hover_color = (100, 100, 100)
+    text_color = (255, 255, 255)
+
+    # Font for button text
+    font = pygame.font.Font(None, 36)
+    
+    clock = pygame.time.Clock()
+    running = True
+
+    while running:
+        mouse_pos = pygame.mouse.get_pos()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return None # User closed window
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # Check which button was clicked
+                for scenario, rect in buttons.items():
+                    if rect.collidepoint(mouse_pos):
+                        pygame.quit()  # Close menu window
+                        return scenario  # Return chosen scenario
+                    
+        # Draw everything
+        screen.fill((30, 30, 30))  # Background color
+
+        # Draw title
+        title_font = pygame.font.Font(None, 48)
+        title_text = title_font.render("Choose Orbital Scenario", True, text_color)
+        title_rect = title_text.get_rect(center=(300, 30))
+        screen.blit(title_text, title_rect)
+
+        # Draw buttons
+        for scenario, rect in buttons.items():
+            # Change color if mouse is hovering
+            color = hover_color if rect.collidepoint(mouse_pos) else button_color
+            pygame.draw.rect(screen, color, rect)
+            pygame.draw.rect(screen, text_color, rect, 2) # Border
+
+            # Draw button text
+            text = font.render(scenario.title(), True, text_color)
+            text_rect = text.get_rect(center=rect.center)
+            screen.blit(text, text_rect)
+
+        pygame.display.flip()
+        clock.tick(60)  # Limit to 60 FPS
+
 def run_visualization(scenario):
     """Run the orbit simulation visualization using Pygame."""
     # If no scenario provided, show menu to choose one
     if scenario is None:
-        pass
+        scenario = show_menu()
+        if scenario is None or scenario == 'exit':
+            return  # User exited menu
     
     # Map scenario string to factory functions
     scenario_map = {
