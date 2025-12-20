@@ -76,7 +76,14 @@ Core classes:
    cd Orbit-Sandbox
    ```
 
-2. **Install dependencies:**
+2. **Create a virtual environment (recommended):**
+   ```bash
+   python3.12 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+   > **Note:** Use Python 3.12 or 3.13. Python 3.14 has compatibility issues with pygame.
+
+3. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
@@ -136,7 +143,7 @@ This creates a 4-panel plot showing:
 
 ## Requirements
 
-- Python 3.8+
+- **Python 3.12 or 3.13** (Python 3.14 not yet supported due to pygame compatibility issues)
 - NumPy
 - Pygame
 - Matplotlib (optional - for plotting)
