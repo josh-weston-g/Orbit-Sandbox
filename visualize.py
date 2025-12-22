@@ -132,7 +132,7 @@ def run_visualization(scenario):
         starfield.append((x, y, brightness))
 
     # Main loop
-    print("Controls: SPACE to pause/resume, UP/DOWN to adjust speed, R to reset, G to toggle grid, ESC to return to menu")
+    print("Controls: \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mT\033[0m to toggle trail, \033[96mESC\033[0m to return to menu")
     print(f"Initial speed multiplier: {last_printed_speed}x")
 
     # Create font for HUD
