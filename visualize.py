@@ -119,6 +119,10 @@ def run_visualization(scenario):
     # Main loop
     print("Controls: SPACE to pause/resume, UP/DOWN to adjust speed, R to reset, ESC to return to menu")
     print(f"Initial speed multiplier: {last_printed_speed}x")
+
+    # Create font for HUD
+    hud_font = pygame.font.Font(None, 24)
+
     running = True
     while running:
         for event in pygame.event.get():
@@ -192,6 +196,11 @@ def run_visualization(scenario):
         star_screen_x = center_x + (star.pos[0] * scale)
         star_screen_y = center_y - (star.pos[1] * scale) # Flip y-axis
 
+        # Calculate stats for HUD for using numpy
+        import numpy as np
+        distance = np.linalg.norm(planet.pos - star.pos)
+        velocity = np.linalg.norm(planet.vel)
+
         screen.fill((0, 0, 0))  # Clear screen with black
         
         # Update trail - only when not paused
@@ -225,6 +234,21 @@ def run_visualization(scenario):
         pygame.draw.circle(screen, (255, 255, 0), (int(star_screen_x), int(star_screen_y)), max(3, int(15 * scale)))
         # Draw the planet
         pygame.draw.circle(screen, (255, 255, 255), (int(planet_screen_x), int(planet_screen_y)), max(1.2, int(6 * scale)))
+        
+        # Draw HUD
+        fps_text = hud_font.render(f"FPS: {clock.get_fps():.0f}", True, (255, 255, 255))
+        zoom_text = hud_font.render(f"Zoom: {scale:.2f}x", True, (255, 255, 255))
+        sim_speed_text = hud_font.render(f"Sim Speed: {round(speed_multiplier)}x", True, (255, 255, 255))
+        distance_text = hud_font.render(f"Distance: {distance:.2f}", True, (255, 255, 255))
+        velocity_text = hud_font.render(f"Velocity: {velocity:.2f}", True, (255, 255, 255))
+
+        # Draw text on screen (right-aligned)
+        screen_width = screen.get_width()
+        screen.blit(fps_text, (screen_width - fps_text.get_width() - 10, 10))
+        screen.blit(zoom_text, (screen_width - zoom_text.get_width() - 10, 35))
+        screen.blit(sim_speed_text, (screen_width - sim_speed_text.get_width() - 10, 60))
+        screen.blit(distance_text, (screen_width - distance_text.get_width() - 10, 85))
+        screen.blit(velocity_text, (screen_width - velocity_text.get_width() - 10, 110))
 
         pygame.display.flip()  # Update the display
 
