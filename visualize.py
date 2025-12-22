@@ -116,6 +116,9 @@ def run_visualization(scenario):
     trail = []
     max_trail_length = 50
 
+    # Grid settings
+    show_grid = False
+
     # Main loop
     print("Controls: SPACE to pause/resume, UP/DOWN to adjust speed, R to reset, ESC to return to menu")
     print(f"Initial speed multiplier: {last_printed_speed}x")
@@ -149,7 +152,10 @@ def run_visualization(scenario):
                     scale *= 1.1
                 elif event.key == pygame.K_MINUS or event.key == pygame.K_KP_MINUS:
                     scale = max(1/5, scale / 1.1)  # Prevent too much zoom out - stops when planets get to min size
-                
+                elif event.key == pygame.K_g:
+                    show_grid = not show_grid
+                    print(f"Grid {'enabled' if show_grid else 'disabled'}.")
+
             # Mouse wheel for zooming
             if event.type == pygame.MOUSEWHEEL:
                 # Zoom in/out
@@ -202,6 +208,45 @@ def run_visualization(scenario):
         velocity = np.linalg.norm(planet.vel)
 
         screen.fill((0, 0, 0))  # Clear screen with black
+        
+        # Draw grid if enabled
+        if show_grid:
+            grid_color = (40, 40, 40)  # Dark gray
+            grid_spacing = 50  # Spacing in physics units
+            
+            # Calculate how many grid lines we need based on screen size and scale
+            # We need to cover the visible area in physics space
+            visible_width = screen.get_width() / scale  # How many physics units wide is the screen?
+            visible_height = screen.get_height() / scale  # How many physics units tall?
+            
+            # Draw vertical lines (parallel to y-axis)
+            # Start from center and go left and right
+            x_physics = 0  # Start at origin
+            while x_physics <= visible_width / 2:
+                # Convert physics x to screen x for both positive and negative
+                screen_x_pos = int(center_x + (x_physics * scale))
+                screen_x_neg = int(center_x + (-x_physics * scale))
+                
+                # Draw line from top to bottom of screen
+                pygame.draw.line(screen, grid_color, (screen_x_pos, 0), (screen_x_pos, screen.get_height()), 1)
+                if x_physics != 0:  # Don't draw center line twice
+                    pygame.draw.line(screen, grid_color, (screen_x_neg, 0), (screen_x_neg, screen.get_height()), 1)
+                
+                x_physics += grid_spacing
+            
+            # Draw horizontal lines (parallel to x-axis)
+            y_physics = 0  # Start at origin
+            while y_physics <= visible_height / 2:
+                # Convert physics y to screen y for both positive and negative
+                screen_y_pos = int(center_y - (y_physics * scale))  # Remember: screen y is flipped
+                screen_y_neg = int(center_y - (-y_physics * scale))
+                
+                # Draw line from left to right of screen
+                pygame.draw.line(screen, grid_color, (0, screen_y_pos), (screen.get_width(), screen_y_pos), 1)
+                if y_physics != 0:  # Don't draw center line twice
+                    pygame.draw.line(screen, grid_color, (0, screen_y_neg), (screen.get_width(), screen_y_neg), 1)
+                
+                y_physics += grid_spacing
         
         # Update trail - only when not paused
         if not paused:
