@@ -3,7 +3,7 @@ from body import Body
 from physics import compute_acceleration
 
 class Simulation:
-    def __init__(self, bodies, G=1.0, dt=0.01):
+    def __init__(self, bodies, G=1.0, dt=0.001):
         """
         Initialize the simulation.
         
