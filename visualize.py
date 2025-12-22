@@ -196,7 +196,7 @@ def run_visualization(scenario):
         
         # Update trail - only when not paused
         if not paused:
-            trail.append((int(planet_screen_x), int(planet_screen_y)))
+            trail.append((planet.pos[0], planet.pos[1]))
             if len(trail) > max_trail_length:
                 trail.pop(0)  # Remove oldest point
             
@@ -205,11 +205,18 @@ def run_visualization(scenario):
             # Create one surface for the entire trail
             trail_surface = pygame.Surface((800, 600), pygame.SRCALPHA)
             
+            # Convert physics coordinates to screen coordinates
+            trail_screen = []
+            for px, py in trail:
+                screen_x = int(center_x + (px * scale))
+                screen_y = int(center_y - (py * scale))
+                trail_screen.append((screen_x, screen_y))
+            
             # Draw all segments on it
-            for i in range(len(trail) - 1):
-                alpha = int(255 * (i + 1) / len(trail))
+            for i in range(len(trail_screen) - 1):
+                alpha = int(255 * (i + 1) / len(trail_screen))
                 pygame.draw.line(trail_surface, (255, 255, 255, alpha), 
-                                trail[i], trail[i + 1], 1)
+                                trail_screen[i], trail_screen[i + 1], 1)
             
             # Blit surface onto main screen
             screen.blit(trail_surface, (0, 0))

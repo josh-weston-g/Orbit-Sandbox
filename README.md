@@ -184,7 +184,6 @@ This is an approximation of continuous calculus with small rectangles - the smal
 - Single central mass only (star doesn't move)
 - 2D simulation (no z-axis)
 - Semi-implicit Euler integration (good but not perfect)
-- Trail rendering has zoom artifacts
 - Arbitrary units (not real-world meters/kg/seconds yet)
 
 **Planned features:**
