@@ -19,7 +19,7 @@ def main(scenario):
     bodies, G = factory()
     
     # Simulation parameters
-    dt = 0.01  # Time step
+    dt = 0.001  # Time step
     
     # Create simulation
     sim = Simulation(bodies, G=G, dt=dt)
@@ -45,7 +45,7 @@ def main(scenario):
     print("="*50)
     
     # Run the simulation
-    sim.run_continuous()
+    sim.run(num_steps=1000)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Orbit Simulation Sandbox. Run different orbital scenarios which conform to a correct Newtonian physics model.")
