@@ -116,11 +116,14 @@ def run_visualization(scenario):
     trail = []
     max_trail_length = 50
 
-    # Grid settings
+    # Setting States
+    # Grid toggle
     show_grid = False
+    # Trail toggle
+    show_trail = True
 
     # Main loop
-    print("Controls: SPACE to pause/resume, UP/DOWN to adjust speed, R to reset, ESC to return to menu")
+    print("Controls: SPACE to pause/resume, UP/DOWN to adjust speed, R to reset, G to toggle grid, ESC to return to menu")
     print(f"Initial speed multiplier: {last_printed_speed}x")
 
     # Create font for HUD
@@ -155,6 +158,9 @@ def run_visualization(scenario):
                 elif event.key == pygame.K_g:
                     show_grid = not show_grid
                     print(f"Grid {'enabled' if show_grid else 'disabled'}.")
+                elif event.key == pygame.K_t:
+                    show_trail = not show_trail
+                    print(f"Trail {'enabled' if show_trail else 'disabled'}.")
 
             # Mouse wheel for zooming
             if event.type == pygame.MOUSEWHEEL:
@@ -248,32 +254,33 @@ def run_visualization(scenario):
                 
                 y_physics += grid_spacing
         
-        # Update trail - only when not paused
+        # Update trail
         if not paused:
             trail.append((planet.pos[0], planet.pos[1]))
             if len(trail) > max_trail_length:
                 trail.pop(0)  # Remove oldest point
-            
-        # Draw the trail
-        if len(trail) > 1:
-            # Create one surface for the entire trail
-            trail_surface = pygame.Surface((800, 600), pygame.SRCALPHA)
-            
-            # Convert physics coordinates to screen coordinates
-            trail_screen = []
-            for px, py in trail:
-                screen_x = int(center_x + (px * scale))
-                screen_y = int(center_y - (py * scale))
-                trail_screen.append((screen_x, screen_y))
-            
-            # Draw all segments on it
-            for i in range(len(trail_screen) - 1):
-                alpha = int(255 * (i + 1) / len(trail_screen))
-                pygame.draw.line(trail_surface, (40, 122, 184, alpha), 
-                                trail_screen[i], trail_screen[i + 1], 1)
-            
-            # Blit surface onto main screen
-            screen.blit(trail_surface, (0, 0))
+        
+        if show_trail:        
+            # Draw the trail
+            if len(trail) > 1:
+                # Create one surface for the entire trail
+                trail_surface = pygame.Surface((800, 600), pygame.SRCALPHA)
+                
+                # Convert physics coordinates to screen coordinates
+                trail_screen = []
+                for px, py in trail:
+                    screen_x = int(center_x + (px * scale))
+                    screen_y = int(center_y - (py * scale))
+                    trail_screen.append((screen_x, screen_y))
+                
+                # Draw all segments on it
+                for i in range(len(trail_screen) - 1):
+                    alpha = int(255 * (i + 1) / len(trail_screen))
+                    pygame.draw.line(trail_surface, (40, 122, 184, alpha), 
+                                    trail_screen[i], trail_screen[i + 1], 1)
+                
+                # Blit surface onto main screen
+                screen.blit(trail_surface, (0, 0))
         
         # Draw the star
         pygame.draw.circle(screen, (255, 255, 0), (int(star_screen_x), int(star_screen_y)), max(3, int(15 * scale)))
