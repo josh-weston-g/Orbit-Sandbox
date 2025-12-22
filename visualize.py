@@ -224,7 +224,7 @@ def run_visualization(scenario):
             # Draw all segments on it
             for i in range(len(trail_screen) - 1):
                 alpha = int(255 * (i + 1) / len(trail_screen))
-                pygame.draw.line(trail_surface, (255, 255, 255, alpha), 
+                pygame.draw.line(trail_surface, (40, 122, 184, alpha), 
                                 trail_screen[i], trail_screen[i + 1], 1)
             
             # Blit surface onto main screen
@@ -233,7 +233,7 @@ def run_visualization(scenario):
         # Draw the star
         pygame.draw.circle(screen, (255, 255, 0), (int(star_screen_x), int(star_screen_y)), max(3, int(15 * scale)))
         # Draw the planet
-        pygame.draw.circle(screen, (255, 255, 255), (int(planet_screen_x), int(planet_screen_y)), max(1.2, int(6 * scale)))
+        pygame.draw.circle(screen, (40, 122, 180), (int(planet_screen_x), int(planet_screen_y)), max(1.2, int(6 * scale)))
         
         # Draw HUD
         fps_text = hud_font.render(f"FPS: {clock.get_fps():.0f}", True, (255, 255, 255))
