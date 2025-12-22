@@ -122,6 +122,15 @@ def run_visualization(scenario):
     # Trail toggle
     show_trail = True
 
+    # Create static starfield
+    starfield = []
+    import random
+    for _ in range(100):  # 100 starts
+        x = random.randint(0, 800) # Screen width
+        y = random.randint(0, 600) # Screen height
+        brightness = random.randint(100, 255)
+        starfield.append((x, y, brightness))
+
     # Main loop
     print("Controls: SPACE to pause/resume, UP/DOWN to adjust speed, R to reset, G to toggle grid, ESC to return to menu")
     print(f"Initial speed multiplier: {last_printed_speed}x")
@@ -214,6 +223,10 @@ def run_visualization(scenario):
         velocity = np.linalg.norm(planet.vel)
 
         screen.fill((0, 0, 0))  # Clear screen with black
+
+        # Draw starfield
+        for x, y, brightness in starfield:
+            pygame.draw.circle(screen, (brightness, brightness, brightness), (x, y), 1)
         
         # Draw grid if enabled
         if show_grid:
