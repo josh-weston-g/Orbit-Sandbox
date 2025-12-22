@@ -194,11 +194,12 @@ def run_visualization(scenario):
 
         screen.fill((0, 0, 0))  # Clear screen with black
         
-        # Add current position to trail
-        trail.append((int(planet_screen_x), int(planet_screen_y)))
-        if len(trail) > max_trail_length:
-            trail.pop(0)  # Remove oldest point
-        
+        # Update trail - only when not paused
+        if not paused:
+            trail.append((int(planet_screen_x), int(planet_screen_y)))
+            if len(trail) > max_trail_length:
+                trail.pop(0)  # Remove oldest point
+            
         # Draw the trail
         if len(trail) > 1:
             # Create one surface for the entire trail
