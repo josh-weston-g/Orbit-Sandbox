@@ -166,9 +166,9 @@ def run_visualization(scenario):
                     run_visualization(None)  # Show menu again
                     return
                 elif event.key == pygame.K_EQUALS or event.key == pygame.K_KP_PLUS:
-                    scale *= 1.1
+                    scale = min(2000, scale * 1.1)  # Max zoom in limit
                 elif event.key == pygame.K_MINUS or event.key == pygame.K_KP_MINUS:
-                    scale = max(1/5, scale / 1.1)  # Prevent too much zoom out - stops when planets get to min size
+                    scale = max(50, scale / 1.1)  # Max zoom out: shows ~16 AU width
                 elif event.key == pygame.K_g:
                     show_grid = not show_grid
                     print(f"Grid {'enabled' if show_grid else 'disabled'}.")
@@ -180,9 +180,9 @@ def run_visualization(scenario):
             if event.type == pygame.MOUSEWHEEL:
                 # Zoom in/out
                 if event.y > 0:
-                    scale *= 1.1
+                    scale = min(2000, scale * 1.1)  # Max zoom in limit
                 elif event.y < 0:
-                    scale = max(1/5, scale / 1.1)  # Prevent too much zoom out - stops when planets get to min size
+                    scale = max(50, scale / 1.1)  # Max zoom out: shows ~16 AU width
 
         frame_time = clock.tick(FPS) / 1000.0  # milliseconds to seconds
         # Adjust speed multiplier with up/down keys - allows for holding keys down
@@ -299,16 +299,16 @@ def run_visualization(scenario):
                 # Blit surface onto main screen
                 screen.blit(trail_surface, (0, 0))
         
-        # Draw the star
-        star_radius = max(10, min(50, int(0.05 * scale)))  # Between 10-50 pixels
+        # Draw the star (scales with zoom, stops shrinking at max zoom out)
+        star_radius = max(2, min(100, int(0.05 * scale)))
         pygame.draw.circle(screen, (255, 255, 0), (int(star_screen_x), int(star_screen_y)), star_radius)
-        # Draw the planet
-        planet_radius = max(4, min(20, int(0.02 * scale)))  # Between 4-20 pixels
+        # Draw the planet (scales with zoom, stops shrinking at max zoom out)
+        planet_radius = max(1, min(40, int(0.02 * scale)))
         pygame.draw.circle(screen, (40, 122, 180), (int(planet_screen_x), int(planet_screen_y)), planet_radius)
         
         # Draw HUD
         fps_text = hud_font.render(f"FPS: {clock.get_fps():.0f}", True, (255, 255, 255))
-        zoom_text = hud_font.render(f"Zoom: {scale:.2f}x", True, (255, 255, 255))
+        zoom_text = hud_font.render(f"Zoom: {(scale / 200):.2f}x", True, (255, 255, 255))
         sim_speed_text = hud_font.render(f"Sim Speed: {(speed_multiplier * 10):.1f}x", True, (255, 255, 255))
         elapsed_time_text = hud_font.render(f"Sim Time: {elapsed_time:.2f} years", True, (255, 255, 255))
         distance_text = hud_font.render(f"Distance: {distance:.2f} AU", True, (255, 255, 255))
