@@ -37,59 +37,53 @@ def create_simple_system():
     return [star, planet], G_AU
 
 def create_elliptical_orbit():
-    """Create a system with an elliptical orbit."""
-    # Constants
-    G = 1.0
-
-    # Star at origin (stationary)
+    """Create a system with an elliptical orbit (Earth at 70% circular velocity)."""
+    # Central star
     star = Body(
+        mass=1.0,   # Solar masses
         position=[0, 0],
-        velocity=[0, 0],
-        mass=1000
+        velocity=[0, 0]
     )
 
-    # Planet parameters
-    orbital_radius = 100.0
-    planet_mass = 1.0
+    # Planet (Earth-like, slower velocity for elliptical orbit)
+    orbital_radius = 1.0  # AU
+    planet_mass = 3.0e-6  # Solar masses (Earth)
 
-    # Calculate orbital speed and reduce it to create ellipse
-    speed = circular_orbit_velocity(star.mass, orbital_radius, G) * 0.7
+    # Calculate circular orbit speed, then reduce to 70% to create ellipse
+    circular_speed = circular_orbit_velocity(star.mass, orbital_radius, G_AU)
+    orbital_speed = circular_speed * 0.7
 
-    # Place planet on x-axis, moving in +y direction
     planet = Body(
+        mass=planet_mass,
         position=[orbital_radius, 0],
-        velocity=[0, speed],
-        mass=planet_mass
+        velocity=[0, orbital_speed]
     )
 
-    return [star, planet], G
+    return [star, planet], G_AU
 
 def create_escape_trajectory():
-    """Create a system where the planet escapes to infinity."""
-    # Constants
-    G = 1.0
-
-    # Star at origin (stationary)
+    """Create a system where the planet escapes to infinity (120% escape velocity)."""
+    # Central star
     star = Body(
+        mass=1.0,   # Solar masses
         position=[0, 0],
-        velocity=[0, 0],
-        mass=1000
+        velocity=[0, 0]
     )
 
-    # Planet parameters
-    orbital_radius = 100.0
-    planet_mass = 1.0
+    # Planet (Earth-like, at escape velocity)
+    orbital_radius = 1.0  # AU
+    planet_mass = 3.0e-6  # Solar masses (Earth)
 
-    # Calculate escape velocity and exceed it
-    circular_speed = circular_orbit_velocity(star.mass, orbital_radius, G)
+    # Calculate escape velocity: v_escape = sqrt(2) * v_circular
+    # Then exceed it by 20%
+    circular_speed = circular_orbit_velocity(star.mass, orbital_radius, G_AU)
     escape_speed = circular_speed * np.sqrt(2)
-    speed = escape_speed * 1.2  # 20% above escape velocity
+    orbital_speed = escape_speed * 1.2  # 20% above escape velocity
 
-    # Place planet on x-axis, moving in +y direction
     planet = Body(
+        mass=planet_mass,
         position=[orbital_radius, 0],
-        velocity=[0, speed],
-        mass=planet_mass
+        velocity=[0, orbital_speed]
     )
 
-    return [star, planet], G
+    return [star, planet], G_AU
