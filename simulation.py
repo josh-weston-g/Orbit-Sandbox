@@ -3,7 +3,7 @@ from body import Body
 from physics import compute_acceleration
 
 class Simulation:
-    def __init__(self, bodies, G=1.0, dt=0.01):
+    def __init__(self, bodies, G=1.0, dt=0.001):
         """
         Initialize the simulation.
         
@@ -38,8 +38,14 @@ class Simulation:
     
     def run(self, num_steps):
         """Run the simulation for a given number of steps."""
-        for _ in range(num_steps):
+        for i in range(num_steps):
             self.step()
+            
+            # Print state every step
+            planet = self.bodies[1]  # Assume second body is planet
+            distance = np.linalg.norm(planet.pos)
+            speed = np.linalg.norm(planet.vel)
+            print(f"t={self.time:8.2f} | pos=[{planet.pos[0]:7.2f},{planet.pos[1]:7.2f}] | r={distance:6.2f} | v={speed:.4f}")
     
     def run_continuous(self, print_interval=1000):
         """Run the simulation continuously until interrupted.

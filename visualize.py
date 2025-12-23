@@ -99,19 +99,24 @@ def run_visualization(scenario):
     clock = pygame.time.Clock()
     FPS = 60
     paused = False
-    scale = 1.0  # pixels per unit distance
+    scale = 200  # pixels per unit distance
+    elapsed_time = 0.0
 
-    # Physics timing
-    physics_dt = 0.01  # Must match sim.dt
-    physics_accumulator = 0.0
-    speed_multiplier = 50.0  # Can be adjusted to speed up or slow down simulation
-    last_printed_speed = round(speed_multiplier)
 
     # Create the physics simulation
-    sim = Simulation(bodies, G=G, dt=0.01)
+    sim = Simulation(bodies, G=G, dt=0.001)
     planet = bodies[1]
     star = bodies[0]
 
+    # Physics timing
+    physics_dt = sim.dt  # Must match sim.dt
+    physics_accumulator = 0.0
+    speed_multiplier = 0.1  # 10 real seconds per simulated year
+
+    # Key delay settings
+    speed_change_cooldown= 0.0 # Timer for speed changes
+    SPEED_CHANGE_DELAY = 0.1 # Seconds between speed changes
+    
     # Trail settings
     trail = []
     max_trail_length = 50
@@ -133,7 +138,6 @@ def run_visualization(scenario):
 
     # Main loop
     print("Controls: \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mT\033[0m to toggle trail, \033[96mESC\033[0m to return to menu")
-    print(f"Initial speed multiplier: {last_printed_speed}x")
 
     # Create font for HUD
     hud_font = pygame.font.Font(None, 24)
@@ -151,19 +155,20 @@ def run_visualization(scenario):
                 elif event.key == pygame.K_r:
                     # Reset simulation - to be added
                     bodies, G = factory() # Recreate bodies from same factory
-                    sim = Simulation(bodies, G=G, dt=0.01) # New simulation
+                    sim = Simulation(bodies, G=G, dt=0.001) # New simulation
                     planet = bodies[1]
                     star = bodies[0]
                     trail = [] # Clear trail
+                    elapsed_time = 0.0 # Reset elapsed time
                     print("Simulation reset.")
                 elif event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     run_visualization(None)  # Show menu again
                     return
                 elif event.key == pygame.K_EQUALS or event.key == pygame.K_KP_PLUS:
-                    scale *= 1.1
+                    scale = min(2000, scale * 1.1)  # Max zoom in limit
                 elif event.key == pygame.K_MINUS or event.key == pygame.K_KP_MINUS:
-                    scale = max(1/5, scale / 1.1)  # Prevent too much zoom out - stops when planets get to min size
+                    scale = max(50, scale / 1.1)  # Max zoom out: shows ~16 AU width
                 elif event.key == pygame.K_g:
                     show_grid = not show_grid
                     print(f"Grid {'enabled' if show_grid else 'disabled'}.")
@@ -175,29 +180,28 @@ def run_visualization(scenario):
             if event.type == pygame.MOUSEWHEEL:
                 # Zoom in/out
                 if event.y > 0:
-                    scale *= 1.1
+                    scale = min(2000, scale * 1.1)  # Max zoom in limit
                 elif event.y < 0:
-                    scale = max(1/5, scale / 1.1)  # Prevent too much zoom out - stops when planets get to min size
+                    scale = max(50, scale / 1.1)  # Max zoom out: shows ~16 AU width
 
+        frame_time = clock.tick(FPS) / 1000.0  # milliseconds to seconds
         # Adjust speed multiplier with up/down keys - allows for holding keys down
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_UP]:
-            speed_multiplier += 0.1
-            if round(speed_multiplier) != last_printed_speed:
-                last_printed_speed = round(speed_multiplier)
-                print(f"Speed multiplier: {last_printed_speed}x")
-        elif keys[pygame.K_DOWN]:
-            speed_multiplier = max(1.0, speed_multiplier - 0.1)
-            if round(speed_multiplier) != last_printed_speed:
-                last_printed_speed = round(speed_multiplier)
-                print(f"Speed multiplier: {last_printed_speed}x")
+        speed_change_cooldown -= frame_time
+        if speed_change_cooldown <= 0.0:
+            if keys[pygame.K_UP]:
+                speed_multiplier += 0.01
+                speed_change_cooldown = SPEED_CHANGE_DELAY
+            elif keys[pygame.K_DOWN]:
+                speed_multiplier = max(0.01, speed_multiplier - 0.01)
+                speed_change_cooldown = SPEED_CHANGE_DELAY
 
         # How much real time passed since last frame?
-        frame_time = clock.tick(FPS) / 1000.0  # milliseconds to seconds
         physics_accumulator += frame_time * speed_multiplier
         
-        # Run enough physics steps to catch up
+        # Run enough physics steps to catch up and update elapsed time
         if not paused:
+            elapsed_time += frame_time * speed_multiplier
             while physics_accumulator >= physics_dt:
                 sim.step()
                 physics_accumulator -= physics_dt
@@ -231,7 +235,7 @@ def run_visualization(scenario):
         # Draw grid if enabled
         if show_grid:
             grid_color = (40, 40, 40)  # Dark gray
-            grid_spacing = 50  # Spacing in physics units
+            grid_spacing = 0.5  # Spacing in physics units
             
             # Calculate how many grid lines we need based on screen size and scale
             # We need to cover the visible area in physics space
@@ -295,25 +299,29 @@ def run_visualization(scenario):
                 # Blit surface onto main screen
                 screen.blit(trail_surface, (0, 0))
         
-        # Draw the star
-        pygame.draw.circle(screen, (255, 255, 0), (int(star_screen_x), int(star_screen_y)), max(3, int(15 * scale)))
-        # Draw the planet
-        pygame.draw.circle(screen, (40, 122, 180), (int(planet_screen_x), int(planet_screen_y)), max(1.2, int(6 * scale)))
+        # Draw the star (scales with zoom, stops shrinking at max zoom out)
+        star_radius = max(2, min(100, int(0.05 * scale)))
+        pygame.draw.circle(screen, (255, 255, 0), (int(star_screen_x), int(star_screen_y)), star_radius)
+        # Draw the planet (scales with zoom, stops shrinking at max zoom out)
+        planet_radius = max(1, min(40, int(0.02 * scale)))
+        pygame.draw.circle(screen, (40, 122, 180), (int(planet_screen_x), int(planet_screen_y)), planet_radius)
         
         # Draw HUD
         fps_text = hud_font.render(f"FPS: {clock.get_fps():.0f}", True, (255, 255, 255))
-        zoom_text = hud_font.render(f"Zoom: {scale:.2f}x", True, (255, 255, 255))
-        sim_speed_text = hud_font.render(f"Sim Speed: {round(speed_multiplier)}x", True, (255, 255, 255))
-        distance_text = hud_font.render(f"Distance: {distance:.2f}", True, (255, 255, 255))
-        velocity_text = hud_font.render(f"Velocity: {velocity:.2f}", True, (255, 255, 255))
+        zoom_text = hud_font.render(f"Zoom: {(scale / 200):.2f}x", True, (255, 255, 255))
+        sim_speed_text = hud_font.render(f"Sim Speed: {(speed_multiplier * 10):.1f}x", True, (255, 255, 255))
+        elapsed_time_text = hud_font.render(f"Sim Time: {elapsed_time:.2f} years", True, (255, 255, 255))
+        distance_text = hud_font.render(f"Distance: {distance:.2f} AU", True, (255, 255, 255))
+        velocity_text = hud_font.render(f"Velocity: {velocity:.2f} AU/yr", True, (255, 255, 255))
 
         # Draw text on screen (right-aligned)
         screen_width = screen.get_width()
         screen.blit(fps_text, (screen_width - fps_text.get_width() - 10, 10))
         screen.blit(zoom_text, (screen_width - zoom_text.get_width() - 10, 35))
         screen.blit(sim_speed_text, (screen_width - sim_speed_text.get_width() - 10, 60))
-        screen.blit(distance_text, (screen_width - distance_text.get_width() - 10, 85))
-        screen.blit(velocity_text, (screen_width - velocity_text.get_width() - 10, 110))
+        screen.blit(elapsed_time_text, (screen_width - elapsed_time_text.get_width() - 10, 85))
+        screen.blit(distance_text, (screen_width - distance_text.get_width() - 10, 110))
+        screen.blit(velocity_text, (screen_width - velocity_text.get_width() - 10, 135))
 
         pygame.display.flip()  # Update the display
 
