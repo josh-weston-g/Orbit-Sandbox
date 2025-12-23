@@ -235,7 +235,7 @@ def run_visualization(scenario):
         # Draw grid if enabled
         if show_grid:
             grid_color = (40, 40, 40)  # Dark gray
-            grid_spacing = 50  # Spacing in physics units
+            grid_spacing = 0.5  # Spacing in physics units
             
             # Calculate how many grid lines we need based on screen size and scale
             # We need to cover the visible area in physics space
