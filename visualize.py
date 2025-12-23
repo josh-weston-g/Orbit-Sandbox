@@ -99,19 +99,20 @@ def run_visualization(scenario):
     clock = pygame.time.Clock()
     FPS = 60
     paused = False
-    scale = 1.0  # pixels per unit distance
+    scale = 200  # pixels per unit distance
 
-    # Physics timing
-    physics_dt = 0.01  # Must match sim.dt
-    physics_accumulator = 0.0
-    speed_multiplier = 50.0  # Can be adjusted to speed up or slow down simulation
-    last_printed_speed = round(speed_multiplier)
 
     # Create the physics simulation
-    sim = Simulation(bodies, G=G, dt=0.01)
+    sim = Simulation(bodies, G=G, dt=0.001)
     planet = bodies[1]
     star = bodies[0]
 
+    # Physics timing
+    physics_dt = sim.dt  # Must match sim.dt
+    physics_accumulator = 0.0
+    speed_multiplier = 1.0  # Can be adjusted to speed up or slow down simulation
+    last_printed_speed = round(speed_multiplier)
+    
     # Trail settings
     trail = []
     max_trail_length = 50
@@ -151,7 +152,7 @@ def run_visualization(scenario):
                 elif event.key == pygame.K_r:
                     # Reset simulation - to be added
                     bodies, G = factory() # Recreate bodies from same factory
-                    sim = Simulation(bodies, G=G, dt=0.01) # New simulation
+                    sim = Simulation(bodies, G=G, dt=0.001) # New simulation
                     planet = bodies[1]
                     star = bodies[0]
                     trail = [] # Clear trail
@@ -296,9 +297,11 @@ def run_visualization(scenario):
                 screen.blit(trail_surface, (0, 0))
         
         # Draw the star
-        pygame.draw.circle(screen, (255, 255, 0), (int(star_screen_x), int(star_screen_y)), max(3, int(15 * scale)))
+        star_radius = max(10, min(50, int(0.05 * scale)))  # Between 10-50 pixels
+        pygame.draw.circle(screen, (255, 255, 0), (int(star_screen_x), int(star_screen_y)), star_radius)
         # Draw the planet
-        pygame.draw.circle(screen, (40, 122, 180), (int(planet_screen_x), int(planet_screen_y)), max(1.2, int(6 * scale)))
+        planet_radius = max(4, min(20, int(0.02 * scale)))  # Between 4-20 pixels
+        pygame.draw.circle(screen, (40, 122, 180), (int(planet_screen_x), int(planet_screen_y)), planet_radius)
         
         # Draw HUD
         fps_text = hud_font.render(f"FPS: {clock.get_fps():.0f}", True, (255, 255, 255))
