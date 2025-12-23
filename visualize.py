@@ -311,8 +311,8 @@ def run_visualization(scenario):
         zoom_text = hud_font.render(f"Zoom: {scale:.2f}x", True, (255, 255, 255))
         sim_speed_text = hud_font.render(f"Sim Speed: {(speed_multiplier * 10):.1f}x", True, (255, 255, 255))
         elapsed_time_text = hud_font.render(f"Sim Time: {elapsed_time:.2f} years", True, (255, 255, 255))
-        distance_text = hud_font.render(f"Distance: {distance:.2f}", True, (255, 255, 255))
-        velocity_text = hud_font.render(f"Velocity: {velocity:.2f}", True, (255, 255, 255))
+        distance_text = hud_font.render(f"Distance: {distance:.2f} AU", True, (255, 255, 255))
+        velocity_text = hud_font.render(f"Velocity: {velocity:.2f} AU/yr", True, (255, 255, 255))
 
         # Draw text on screen (right-aligned)
         screen_width = screen.get_width()
