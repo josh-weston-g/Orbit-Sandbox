@@ -3,9 +3,10 @@ from body import Body
 from simulation import Simulation
 from visualize import run_visualization
 from systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory
+from planets import PLANETS
 import argparse
 
-def main(scenario):
+def main(scenario, planet_name):
     """Set up and run the simulation."""
     # Map scenario string to factory functions
     scenario_map = {
@@ -51,11 +52,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Orbit Simulation Sandbox. Run different orbital scenarios which conform to a correct Newtonian physics model.")
     parser.add_argument('--scenario', type=str, choices=['circular', 'elliptical', 'escape'], help='Choose the orbital scenario: circular, elliptical, or escape.')
     parser.add_argument('--visualize', action='store_true', help='Run the visualization instead of console simulation.')
+    parser.add_argument('--planet', type=str, default='earth', help='Name of the planet to simulate (default: earth).')
     args = parser.parse_args()
+    #! maybe add validation for planet name?
     if args.visualize:
-        run_visualization(args.scenario)
+        run_visualization(args.scenario, PLANETS[args.planet.lower()])
     else:
         # Console mode: scenario is required
         if args.scenario is None:
             parser.error("the following arguments are required: --scenario when not using --visualize")
-        main(args.scenario)
+        main(args.scenario, PLANETS[args.planet.lower()])

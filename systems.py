@@ -3,7 +3,7 @@ from body import Body
 import numpy as np
 from units import G_AU
 
-def create_simple_system():
+def create_simple_system(planet_data):
     """Create a simple star-planet system with a circular orbit."""
     # Central star
     star = Body(
@@ -14,12 +14,11 @@ def create_simple_system():
 
     # Planet (Earth-like)
     # Distance: 1 AU (Earth's orbital radius)
-    orbital_radius = 1.0  # AU
+    orbital_radius = planet_data['semi_major_axis']  # AU
 
     # Planet mass: Earth is about 3x10^-6 solar masses
     # (Earth mass = 5.972×10^24 kg, Solar mass = 1.989×10^30 kg)
-    planet_mass = 3.0e-6  # Solar masses
-
+    planet_mass = planet_data['mass']  # Solar masses
     # Calculate circular orbit velocity
     # For circular orbit: v = sqrt(G * M / r)
     # With G = 39.478 AU³/(M☉·year²), M = 1.0 M☉, r = 1.0 AU

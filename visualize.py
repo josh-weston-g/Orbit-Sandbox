@@ -71,7 +71,7 @@ def show_menu():
         pygame.display.flip()
         clock.tick(60)  # Limit to 60 FPS
 
-def run_visualization(scenario):
+def run_visualization(scenario, planet_data):
     """Run the orbit simulation visualization using Pygame."""
     # If no scenario provided, show menu to choose one
     if scenario is None:
@@ -87,7 +87,7 @@ def run_visualization(scenario):
     }
     # Get factory function and create system
     factory = scenario_map[scenario]
-    bodies, G = factory()
+    bodies, G = factory(planet_data)
 
     # Initialize Pygame
     pygame.init()
@@ -99,7 +99,7 @@ def run_visualization(scenario):
     clock = pygame.time.Clock()
     FPS = 60
     paused = False
-    scale = 200  # pixels per unit distance
+    scale = 200 / planet_data['semi_major_axis']  # pixels per unit distance divided by semi-major axis to adjust zoom based on orbit size
     elapsed_time = 0.0
 
 
@@ -290,10 +290,11 @@ def run_visualization(scenario):
                     screen_y = int(center_y - (py * scale))
                     trail_screen.append((screen_x, screen_y))
                 
+                trail_color = planet_data['color']
                 # Draw all segments on it
                 for i in range(len(trail_screen) - 1):
                     alpha = int(255 * (i + 1) / len(trail_screen))
-                    pygame.draw.line(trail_surface, (40, 122, 184, alpha), 
+                    pygame.draw.line(trail_surface, (*trail_color, alpha), 
                                     trail_screen[i], trail_screen[i + 1], 1)
                 
                 # Blit surface onto main screen
@@ -304,7 +305,7 @@ def run_visualization(scenario):
         pygame.draw.circle(screen, (255, 255, 0), (int(star_screen_x), int(star_screen_y)), star_radius)
         # Draw the planet (scales with zoom, stops shrinking at max zoom out)
         planet_radius = max(1, min(40, int(0.02 * scale)))
-        pygame.draw.circle(screen, (40, 122, 180), (int(planet_screen_x), int(planet_screen_y)), planet_radius)
+        pygame.draw.circle(screen, planet_data['color'], (int(planet_screen_x), int(planet_screen_y)), planet_radius)
         
         # Draw HUD
         fps_text = hud_font.render(f"FPS: {clock.get_fps():.0f}", True, (255, 255, 255))
