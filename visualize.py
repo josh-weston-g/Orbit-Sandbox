@@ -99,7 +99,7 @@ def run_visualization(scenario, planet_data):
     clock = pygame.time.Clock()
     FPS = 60
     paused = False
-    scale = 200 / planet_data['semi_major_axis']  # pixels per unit distance divided by semi-major axis to adjust zoom based on orbit size
+    scale = max(50, 200 / planet_data['semi_major_axis'])  # pixels per unit distance divided by semi-major axis to adjust zoom based on orbit size
     elapsed_time = 0.0
 
 
