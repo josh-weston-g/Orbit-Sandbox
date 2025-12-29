@@ -1,12 +1,12 @@
 import numpy as np
-from body import Body
-from simulation import Simulation
-from visualize import run_visualization
-from systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory
-from planets import PLANETS
+from orbit.body import Body
+from orbit.simulation import Simulation
+from ui.visualize import run_visualization
+from orbit.systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory
+from orbit.planets import PLANETS
 import argparse
 
-def main(scenario, planet_name):
+def main(scenario, planet_data):
     """Set up and run the simulation."""
     # Map scenario string to factory functions
     scenario_map = {
@@ -17,7 +17,7 @@ def main(scenario, planet_name):
 
     # Get factory function and create system
     factory = scenario_map[scenario]
-    bodies, G = factory()
+    bodies, G = factory(planet_data)
     
     # Simulation parameters
     dt = 0.001  # Time step

@@ -1,8 +1,8 @@
 import pygame
-from simulation import Simulation
-from body import Body
-from systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory
-from units import distance_to_km, velocity_to_km_per_s
+from orbit.simulation import Simulation
+from orbit.body import Body
+from orbit.systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory
+from orbit.units import distance_to_km, velocity_to_km_per_s
 
 def show_menu():
     """Show a simple menu to choose orbital scenario. Returns scenario string or None."""

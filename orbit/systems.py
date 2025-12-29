@@ -1,7 +1,7 @@
-from physics import circular_orbit_velocity
-from body import Body
+from .physics import circular_orbit_velocity
+from .body import Body
 import numpy as np
-from units import G_AU
+from .units import G_AU
 
 def create_simple_system(planet_data):
     """Create a simple star-planet system with a circular orbit."""

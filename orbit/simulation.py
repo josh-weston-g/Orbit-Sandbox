@@ -1,6 +1,6 @@
 import numpy as np
-from body import Body
-from physics import compute_acceleration
+from .body import Body
+from .physics import compute_acceleration
 
 class Simulation:
     def __init__(self, bodies, G=1.0, dt=0.001):

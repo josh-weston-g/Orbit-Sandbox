@@ -1,5 +1,5 @@
 import numpy as np
-from body import Body
+from .body import Body
 
 def compute_acceleration(body, source, G=1.0):
     """
