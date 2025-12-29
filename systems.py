@@ -35,7 +35,7 @@ def create_simple_system(planet_data):
 
     return [star, planet], G_AU
 
-def create_elliptical_orbit():
+def create_elliptical_orbit(planet_data):
     """Create a system with an elliptical orbit (Earth at 70% circular velocity)."""
     # Central star
     star = Body(
@@ -45,8 +45,8 @@ def create_elliptical_orbit():
     )
 
     # Planet (Earth-like, slower velocity for elliptical orbit)
-    orbital_radius = 1.0  # AU
-    planet_mass = 3.0e-6  # Solar masses (Earth)
+    orbital_radius = planet_data['semi_major_axis']  # AU
+    planet_mass = planet_data['mass']  # Solar masses (Earth)
 
     # Calculate circular orbit speed, then reduce to 70% to create ellipse
     circular_speed = circular_orbit_velocity(star.mass, orbital_radius, G_AU)
@@ -60,7 +60,7 @@ def create_elliptical_orbit():
 
     return [star, planet], G_AU
 
-def create_escape_trajectory():
+def create_escape_trajectory(planet_data):
     """Create a system where the planet escapes to infinity (120% escape velocity)."""
     # Central star
     star = Body(
@@ -70,8 +70,8 @@ def create_escape_trajectory():
     )
 
     # Planet (Earth-like, at escape velocity)
-    orbital_radius = 1.0  # AU
-    planet_mass = 3.0e-6  # Solar masses (Earth)
+    orbital_radius = planet_data['semi_major_axis']  # AU
+    planet_mass = planet_data['mass']  # Solar masses (Earth)
 
     # Calculate escape velocity: v_escape = sqrt(2) * v_circular
     # Then exceed it by 20%
