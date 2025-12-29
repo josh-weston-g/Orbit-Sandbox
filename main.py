@@ -52,13 +52,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Orbit Simulation Sandbox. Run different orbital scenarios which conform to a correct Newtonian physics model.")
     parser.add_argument('--scenario', type=str, choices=['circular', 'elliptical', 'escape'], help='Choose the orbital scenario: circular, elliptical, or escape.')
     parser.add_argument('--visualize', action='store_true', help='Run the visualization instead of console simulation.')
-    parser.add_argument('--planet', type=str, default='earth', choices=PLANETS.keys(), help='Name of the planet to simulate (default: earth).')
+    parser.add_argument('--planet', type=str, default='earth', help='Name of the planet to simulate (default: earth).')
     args = parser.parse_args()
-    #! fix lowercase issue. jupiter expected but Jupiter should also work, atm does not
+    
+    planet_lower = args.planet.lower()
+    if planet_lower not in PLANETS:
+        parser.error(f"Invalid planet name '{args.planet}'. Available options are: {', '.join(PLANETS.keys())}.")
+
     if args.visualize:
-        run_visualization(args.scenario, PLANETS[args.planet.lower()])
+        run_visualization(args.scenario, PLANETS[planet_lower])
     else:
         # Console mode: scenario is required
         if args.scenario is None:
             parser.error("the following arguments are required: --scenario when not using --visualize")
-        main(args.scenario, PLANETS[args.planet.lower()])
+        main(args.scenario, PLANETS[planet_lower])
