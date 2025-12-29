@@ -2,6 +2,7 @@ import pygame
 from simulation import Simulation
 from body import Body
 from systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory
+from units import distance_to_km, velocity_to_km_per_s
 
 def show_menu():
     """Show a simple menu to choose orbital scenario. Returns scenario string or None."""
@@ -317,7 +318,8 @@ def run_visualization(scenario, planet_data):
         elapsed_sim_time_text = hud_font.render(f"Sim Time: {elapsed_sim_time:.2f} years", True, (255, 255, 255))
         elapsed_real_time_text = hud_font.render(f"Time: {elapsed_real_time:.2f} s", True, (255, 255, 255))
         distance_text = hud_font.render(f"Distance: {distance:.2f} AU", True, (255, 255, 255))
-        velocity_text = hud_font.render(f"Velocity: {velocity:.2f} AU/yr", True, (255, 255, 255))
+        distance_km_text = hud_font.render(f"({distance_to_km(distance):.2f} km)", True, (255, 255, 255))
+        velocity_text = hud_font.render(f"Velocity: {velocity:.2f} AU/yr ({velocity_to_km_per_s(velocity):.2f} km/s)", True, (255, 255, 255))
 
         # Draw text on screen (right-aligned)
         screen_width = screen.get_width()
@@ -327,7 +329,8 @@ def run_visualization(scenario, planet_data):
         screen.blit(elapsed_sim_time_text, (screen_width - elapsed_sim_time_text.get_width() - 10, 85))
         screen.blit(elapsed_real_time_text, (screen_width - elapsed_real_time_text.get_width() - 10, 110))
         screen.blit(distance_text, (screen_width - distance_text.get_width() - 10, 135))
-        screen.blit(velocity_text, (screen_width - velocity_text.get_width() - 10, 160))
+        screen.blit(distance_km_text, (screen_width - distance_km_text.get_width() - 10, 160))
+        screen.blit(velocity_text, (screen_width - velocity_text.get_width() - 10, 185))
 
         pygame.display.flip()  # Update the display
 
