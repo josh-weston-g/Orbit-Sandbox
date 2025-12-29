@@ -100,7 +100,8 @@ def run_visualization(scenario, planet_data):
     FPS = 60
     paused = False
     scale = max(50, 200 / planet_data['semi_major_axis'])  # pixels per unit distance divided by semi-major axis to adjust zoom based on orbit size
-    elapsed_time = 0.0
+    elapsed_sim_time = 0.0
+    elapsed_real_time = 0.0
 
 
     # Create the physics simulation
@@ -154,12 +155,13 @@ def run_visualization(scenario, planet_data):
                     paused = not paused
                 elif event.key == pygame.K_r:
                     # Reset simulation - to be added
-                    bodies, G = factory() # Recreate bodies from same factory
+                    bodies, G = factory(planet_data) # Recreate bodies from same factory
                     sim = Simulation(bodies, G=G, dt=0.001) # New simulation
                     planet = bodies[1]
                     star = bodies[0]
                     trail = [] # Clear trail
-                    elapsed_time = 0.0 # Reset elapsed time
+                    elapsed_sim_time = 0.0 # Reset elapsed time
+                    elapsed_real_time = 0.0 # Reset real time
                     print("Simulation reset.")
                 elif event.key == pygame.K_ESCAPE:
                     pygame.quit()
@@ -201,7 +203,8 @@ def run_visualization(scenario, planet_data):
         
         # Run enough physics steps to catch up and update elapsed time
         if not paused:
-            elapsed_time += frame_time * speed_multiplier
+            elapsed_sim_time += frame_time * speed_multiplier
+            elapsed_real_time += frame_time
             while physics_accumulator >= physics_dt:
                 sim.step()
                 physics_accumulator -= physics_dt
@@ -311,7 +314,8 @@ def run_visualization(scenario, planet_data):
         fps_text = hud_font.render(f"FPS: {clock.get_fps():.0f}", True, (255, 255, 255))
         zoom_text = hud_font.render(f"Zoom: {(scale / 200):.2f}x", True, (255, 255, 255))
         sim_speed_text = hud_font.render(f"Sim Speed: {(speed_multiplier * 10):.1f}x", True, (255, 255, 255))
-        elapsed_time_text = hud_font.render(f"Sim Time: {elapsed_time:.2f} years", True, (255, 255, 255))
+        elapsed_sim_time_text = hud_font.render(f"Sim Time: {elapsed_sim_time:.2f} years", True, (255, 255, 255))
+        elapsed_real_time_text = hud_font.render(f"Time: {elapsed_real_time:.2f} s", True, (255, 255, 255))
         distance_text = hud_font.render(f"Distance: {distance:.2f} AU", True, (255, 255, 255))
         velocity_text = hud_font.render(f"Velocity: {velocity:.2f} AU/yr", True, (255, 255, 255))
 
@@ -320,9 +324,10 @@ def run_visualization(scenario, planet_data):
         screen.blit(fps_text, (screen_width - fps_text.get_width() - 10, 10))
         screen.blit(zoom_text, (screen_width - zoom_text.get_width() - 10, 35))
         screen.blit(sim_speed_text, (screen_width - sim_speed_text.get_width() - 10, 60))
-        screen.blit(elapsed_time_text, (screen_width - elapsed_time_text.get_width() - 10, 85))
-        screen.blit(distance_text, (screen_width - distance_text.get_width() - 10, 110))
-        screen.blit(velocity_text, (screen_width - velocity_text.get_width() - 10, 135))
+        screen.blit(elapsed_sim_time_text, (screen_width - elapsed_sim_time_text.get_width() - 10, 85))
+        screen.blit(elapsed_real_time_text, (screen_width - elapsed_real_time_text.get_width() - 10, 110))
+        screen.blit(distance_text, (screen_width - distance_text.get_width() - 10, 135))
+        screen.blit(velocity_text, (screen_width - velocity_text.get_width() - 10, 160))
 
         pygame.display.flip()  # Update the display
 
