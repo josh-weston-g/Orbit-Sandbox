@@ -93,7 +93,7 @@ def run_visualization(scenario, planet_data):
     # Initialize Pygame
     pygame.init()
 
-    screen = pygame.display.set_mode((800, 600))
+    screen = pygame.display.set_mode((1280, 720))
     pygame.display.set_caption("Orbit Simulation Visualization")
 
     # Create a clock to control frame rate
@@ -132,9 +132,9 @@ def run_visualization(scenario, planet_data):
     # Create static starfield
     starfield = []
     import random
-    for _ in range(100):  # 100 starts
-        x = random.randint(0, 800) # Screen width
-        y = random.randint(0, 600) # Screen height
+    for _ in range(160):  # Scale star count with larger window
+        x = random.randint(0, 1280) # Screen width
+        y = random.randint(0, 720) # Screen height
         brightness = random.randint(100, 255)
         starfield.append((x, y, brightness))
 
@@ -215,7 +215,7 @@ def run_visualization(scenario, planet_data):
         # Convert physics coorrdinates to screen coordinates
         # Physics: (0,0) is center, +x right, +y up
         # Screen: (0,0) is top-left, +x right, +y down
-        center_x, center_y = 400, 300
+        center_x, center_y = 640, 360
         
         # Convert planet position
         planet_screen_x = center_x + (planet.pos[0] * scale)
@@ -285,7 +285,7 @@ def run_visualization(scenario, planet_data):
             # Draw the trail
             if len(trail) > 1:
                 # Create one surface for the entire trail
-                trail_surface = pygame.Surface((800, 600), pygame.SRCALPHA)
+                trail_surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
                 
                 # Convert physics coordinates to screen coordinates
                 trail_screen = []
