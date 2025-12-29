@@ -29,5 +29,11 @@ PLANETS = {
         'orbital_period': 11.86,
         'mass': 9.55e-4,  # ~318 Earth masses
         'color': (201, 153, 103)  # Orange-brown
+    },
+    'saturn': {
+        'semi_major_axis': 9.537,
+        'orbital_period': 29.46,
+        'mass': 2.86e-4,  # ~95 Earth masses
+        'color': (234, 214, 184)  # Pale gold
     }
 }
