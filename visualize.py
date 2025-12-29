@@ -165,7 +165,7 @@ def run_visualization(scenario, planet_data):
                     print("Simulation reset.")
                 elif event.key == pygame.K_ESCAPE:
                     pygame.quit()
-                    run_visualization(None)  # Show menu again
+                    run_visualization(None, planet_data)  # Show menu again
                     return
                 elif event.key == pygame.K_EQUALS or event.key == pygame.K_KP_PLUS:
                     scale = min(2000, scale * 1.1)  # Max zoom in limit
