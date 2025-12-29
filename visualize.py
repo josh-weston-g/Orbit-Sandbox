@@ -311,26 +311,33 @@ def run_visualization(scenario, planet_data):
         planet_radius = max(2, min(40, int(0.02 * scale)))
         pygame.draw.circle(screen, planet_data['color'], (int(planet_screen_x), int(planet_screen_y)), planet_radius)
         
-        # Draw HUD
+        # Draw HUD - organized by category in different screen areas
+        screen_width = screen.get_width()
+        screen_height = screen.get_height()
+        
+        # TOP-RIGHT: Technical/Camera info
         fps_text = hud_font.render(f"FPS: {clock.get_fps():.0f}", True, (255, 255, 255))
         zoom_text = hud_font.render(f"Zoom: {(scale / 200):.2f}x", True, (255, 255, 255))
-        sim_speed_text = hud_font.render(f"Sim Speed: {(speed_multiplier * 10):.1f}x", True, (255, 255, 255))
-        elapsed_sim_time_text = hud_font.render(f"Sim Time: {elapsed_sim_time:.2f} years", True, (255, 255, 255))
-        elapsed_real_time_text = hud_font.render(f"Time: {elapsed_real_time:.2f} s", True, (255, 255, 255))
-        distance_text = hud_font.render(f"Distance: {distance:.2f} AU", True, (255, 255, 255))
-        distance_km_text = hud_font.render(f"({distance_to_km(distance):.2f} km)", True, (255, 255, 255))
-        velocity_text = hud_font.render(f"Velocity: {velocity:.2f} AU/yr ({velocity_to_km_per_s(velocity):.2f} km/s)", True, (255, 255, 255))
-
-        # Draw text on screen (right-aligned)
-        screen_width = screen.get_width()
         screen.blit(fps_text, (screen_width - fps_text.get_width() - 10, 10))
         screen.blit(zoom_text, (screen_width - zoom_text.get_width() - 10, 35))
-        screen.blit(sim_speed_text, (screen_width - sim_speed_text.get_width() - 10, 60))
-        screen.blit(elapsed_sim_time_text, (screen_width - elapsed_sim_time_text.get_width() - 10, 85))
-        screen.blit(elapsed_real_time_text, (screen_width - elapsed_real_time_text.get_width() - 10, 110))
-        screen.blit(distance_text, (screen_width - distance_text.get_width() - 10, 135))
-        screen.blit(distance_km_text, (screen_width - distance_km_text.get_width() - 10, 160))
-        screen.blit(velocity_text, (screen_width - velocity_text.get_width() - 10, 185))
+        
+        # TOP-LEFT: Simulation timing
+        sim_speed_text = hud_font.render(f"Speed: {(speed_multiplier * 10):.1f}x", True, (255, 255, 255))
+        elapsed_sim_time_text = hud_font.render(f"Sim Time: {elapsed_sim_time:.2f} years", True, (255, 255, 255))
+        elapsed_real_time_text = hud_font.render(f"Real Time: {elapsed_real_time:.2f}s", True, (255, 255, 255))
+        screen.blit(sim_speed_text, (10, 10))
+        screen.blit(elapsed_sim_time_text, (10, 35))
+        screen.blit(elapsed_real_time_text, (10, 60))
+        
+        # BOTTOM-RIGHT: Orbital data
+        distance_text = hud_font.render(f"Distance: {distance:.2f} AU", True, (255, 255, 255))
+        distance_km_text = hud_font.render(f"{distance_to_km(distance):.2e} km", True, (255, 255, 255))
+        velocity_text = hud_font.render(f"Velocity: {velocity:.2f} AU/yr", True, (255, 255, 255))
+        velocity_km_text = hud_font.render(f"{velocity_to_km_per_s(velocity):.2f} km/s", True, (255, 255, 255))
+        screen.blit(distance_text, (screen_width - distance_text.get_width() - 10, screen_height - 110))
+        screen.blit(distance_km_text, (screen_width - distance_km_text.get_width() - 10, screen_height - 85))
+        screen.blit(velocity_text, (screen_width - velocity_text.get_width() - 10, screen_height - 60))
+        screen.blit(velocity_km_text, (screen_width - velocity_km_text.get_width() - 10, screen_height - 35))
 
         pygame.display.flip()  # Update the display
 
