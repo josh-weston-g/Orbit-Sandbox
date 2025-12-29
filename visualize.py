@@ -307,7 +307,7 @@ def run_visualization(scenario, planet_data):
         star_radius = max(2, min(100, int(0.05 * scale)))
         pygame.draw.circle(screen, (255, 255, 0), (int(star_screen_x), int(star_screen_y)), star_radius)
         # Draw the planet (scales with zoom, stops shrinking at max zoom out)
-        planet_radius = max(1, min(40, int(0.02 * scale)))
+        planet_radius = max(2, min(40, int(0.02 * scale)))
         pygame.draw.circle(screen, planet_data['color'], (int(planet_screen_x), int(planet_screen_y)), planet_radius)
         
         # Draw HUD
