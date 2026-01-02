@@ -128,7 +128,7 @@ def run_visualization(scenario, planet_data):
 
     # Camera panning settings
     camera_x, camera_y = 0.0, 0.0
-    camera_speed = 2 # AU per second
+    camera_speed = 1 # AU per second
     # Mouse drag variables
     dragging = False
     last_mouse_pos = (0, 0)
