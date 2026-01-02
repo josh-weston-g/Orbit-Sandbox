@@ -188,13 +188,14 @@ This method evaluates acceleration at both the start and end of each timestep, u
 
 ### Numerical Integration
 
-The simulator uses a fixed timestep (`dt = 0.01`) and advances the universe forward in discrete steps. Each step:
-1. Computes gravitational acceleration based on current positions
-2. Updates velocities using acceleration
-3. Updates positions using new velocities
-4. Advances simulation time
+The simulator uses a fixed timestep (`dt = 0.001` years) and advances the universe forward in discrete steps using the **Velocity Verlet algorithm**. Each step:
+1. Computes gravitational acceleration at the current position
+2. Updates position using current velocity plus a half-step acceleration correction
+3. Computes new acceleration at the updated position
+4. Updates velocity using the average of old and new accelerations
+5. Advances simulation time
 
-This is an approximation of continuous calculus with small rectangles - the smaller the timestep, the more accurate the simulation.
+By evaluating forces at both the beginning and end of each timestep and averaging them, Velocity Verlet achieves 2nd-order accuracy. This means errors scale with dt² rather than dt, providing excellent long-term stability and energy conservation even with relatively large timesteps.
 
 ### Energy Conservation
 
