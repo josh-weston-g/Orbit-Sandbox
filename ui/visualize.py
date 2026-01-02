@@ -140,6 +140,8 @@ def run_visualization(scenario, planet_data):
     show_trail = True
     # Velocity vector toggle
     show_velocity_vector = False
+    # Energy display toggle
+    show_energy = False
 
     # Create static starfield
     starfield = []
@@ -195,6 +197,9 @@ def run_visualization(scenario, planet_data):
                 elif event.key == pygame.K_v:
                     show_velocity_vector = not show_velocity_vector
                     print(f"Velocity vector {'enabled' if show_velocity_vector else 'disabled'}.")
+                elif event.key == pygame.K_e:
+                    show_energy = not show_energy
+                    print(f"Energy display {'enabled' if show_energy else 'disabled'}.")
 
             # Mouse drag for panning
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -281,6 +286,12 @@ def run_visualization(scenario, planet_data):
         import numpy as np
         distance = np.linalg.norm(planet.pos - star.pos)
         velocity = np.linalg.norm(planet.vel)
+
+        # Calculate energy if enabled
+        if show_energy:
+            kinetic_energy = 0.5 * planet.mass * (velocity ** 2)
+            potential_energy = - sim.G * (star.mass * planet.mass) / distance
+            total_energy = kinetic_energy + potential_energy
 
         # Calculate velocity vector tip position
         velocity_vector_tip = planet.pos + (planet.vel * velocity_vector_scale)
@@ -423,6 +434,15 @@ def run_visualization(scenario, planet_data):
         screen.blit(sim_speed_text, (10, 10))
         screen.blit(elapsed_sim_time_text, (10, 35))
         screen.blit(elapsed_real_time_text, (10, 60))
+
+        # MIDDLE-LEFT: Energy display if enabled
+        if show_energy:
+            ke_text = primary_hud_font.render(f"KE: {kinetic_energy:.2e}", True, (255, 255, 255))
+            pe_text = primary_hud_font.render(f"PE: {potential_energy:.2e}", True, (255, 255, 255))
+            te_text = primary_hud_font.render(f"Total: {total_energy:.2e}", True, (255, 255, 255))
+            screen.blit(ke_text, (10, screen_height // 2 - 30))
+            screen.blit(pe_text, (10, screen_height // 2))
+            screen.blit(te_text, (10, screen_height // 2 + 30))
         
         # BOTTOM-RIGHT: Orbital data
         distance_text = primary_hud_font.render(f"Distance: {distance:.2f} AU", True, (255, 255, 255))

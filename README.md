@@ -186,6 +186,10 @@ The simulator uses a fixed timestep (`dt = 0.01`) and advances the universe forw
 
 This is an approximation of continuous calculus with small rectangles - the smaller the timestep, the more accurate the simulation.
 
+### Energy Conservation
+
+The simulation displays total mechanical energy (kinetic + potential) as a diagnostic tool. In a perfect orbital system, total energy should remain constant. Due to numerical integration errors with semi-implicit Euler, you may observe energy fluctuations of approximately 2% - this is normal and acceptable for visualization purposes. The orbits remain stable and visually accurate despite these small numerical variations. The integration method is due to be changed in the future to help minimize these errors.
+
 ## Known Limitations & Future Work
 
 **Current limitations:**
