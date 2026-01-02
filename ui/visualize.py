@@ -344,7 +344,7 @@ def run_visualization(scenario, planet_data):
             wing2_y = normalized_vel[0] * sin(-arrowhead_angle) + normalized_vel[1] * cos(-arrowhead_angle)
 
             # Scale wing directions to pixel length
-            arrow_length = 10  # Length of arrowhead wings in pixels
+            arrow_length = max(5, min(15, int(0.05 * scale)))  # Length of arrowhead wings in pixels - adjust with zoom
             wing1_offset_x = wing1_x * arrow_length
             wing1_offset_y = wing1_y * arrow_length
             wing2_offset_x = wing2_x * arrow_length
