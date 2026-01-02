@@ -20,45 +20,35 @@ Whether you want to explore orbital mechanics, experiment with different initial
 
 ## Current Features
 
-- 🪐 **Real-world planetary simulations:**
-  - Six planets available: Mercury, Venus, Earth, Mars, Jupiter, Saturn
-  - Accurate orbital parameters (semi-major axis, period, mass)
-  - Real astronomical units (AU, solar masses, years)
-  - Three orbital scenarios: circular, elliptical, escape trajectory
+- 🪐 **Three orbital scenarios:**
+  - Circular orbit - stable, constant radius
+  - Elliptical orbit - oscillates between periapsis and apoapsis
+  - Escape trajectory - hyperbolic path to infinity
 - ⚙️ **Honest physics simulation:**
   - Newtonian gravity (inverse square law)
   - Semi-implicit Euler integration
   - Conserves angular momentum
   - No hardcoded orbital paths
-  - Proper G constant calculated for AU/year system
-- 🎮 **Interactive visualization (1280×720 window):**
-  - Real-time Pygame rendering at 60 FPS
-  - Mouse wheel zoom (50-2000 pixels per AU)
-  - Toggleable orbital trail rendering (T key)
-  - Toggleable grid overlay (G key)
-  - Static starfield background
+- 🎮 **Interactive visualization:**
+  - Real-time Pygame rendering
+  - Mouse wheel zoom with limits
+  - Camera panning with WASD keys or click-and-drag
+  - Toggleable velocity vector display with arrowheads
+  - Toggleable grid overlay
+  - Orbital trail rendering
   - Pause/resume with spacebar
-  - Adjustable simulation speed (UP/DOWN arrows)
   - Reset simulation with R key
   - ESC to return to menu
-- 📊 **Comprehensive HUD display:**
-  - Real-time FPS counter
-  - Zoom level indicator
-  - Simulation speed multiplier
-  - Elapsed simulation time (years) and real time (seconds)
-  - Distance from star (AU and km)
-  - Orbital velocity (AU/yr and km/s)
 - 🖥️ **Console mode:**
-  - CLI planet and scenario selection
+  - CLI scenario selection
   - Periodic position/distance/velocity output
   - Ctrl+C graceful exit
 - 📊 **Data export:**
   - CSV logging for post-simulation analysis
   - Matplotlib plotting script included
 - 🎯 **Modular architecture:**
-  - Clean package structure (orbit/, ui/, tools/)
-  - Easy to extend with new planets or scenarios
-  - Separation between physics engine and visualization
+  - Clean separation between physics, simulation, and rendering
+  - Easy to extend with new scenarios or integrators
 
 ## Project Structure
 
@@ -67,24 +57,19 @@ The codebase is organized with clear separation of concerns:
 ```
 Orbit-Sandbox/
 ├── main.py            # Entry point - CLI argument handling
-├── orbit/             # Core simulation engine
-│   ├── body.py        # Body class - position, velocity, mass
-│   ├── physics.py     # Gravity calculations and orbital velocity formulas
-│   ├── simulation.py  # Simulation class - physics loop and time stepping
-│   ├── systems.py     # Scenario factory functions (circular, elliptical, escape)
-│   ├── units.py       # Real-world unit conversions (AU, solar masses, years)
-│   └── planets.py     # Real planet data (Mercury, Venus, Earth, Mars, Jupiter, Saturn)
-├── ui/                # Visualization layer
-│   └── visualize.py   # Pygame rendering, HUD, and interactive controls
-├── tools/             # Analysis utilities
-│   └── plot_orbit.py  # Matplotlib plotting script for CSV data
+├── body.py            # Body class - position, velocity, mass, integration
+├── physics.py         # Gravity calculations and orbital velocity formulas
+├── simulation.py      # Simulation class - physics loop and time stepping
+├── systems.py         # Scenario factory functions (circular, elliptical, escape)
+├── visualize.py       # Pygame visualization and menu system
+├── plot_orbit.py      # Matplotlib plotting script for CSV data
 └── requirements.txt   # Python dependencies
 ```
 
 Core classes:
 - **Body:** Represents a physical object with position, velocity, and mass
-- **Simulation:** Orchestrates the physics loop and advances time in AU/year units
-- **Visualization:** Handles Pygame rendering, HUD, menu, and user input
+- **Simulation:** Orchestrates the physics loop and advances time
+- **Visualization:** Handles Pygame rendering, menu, and user input
 
 ## Installation
 
@@ -113,21 +98,15 @@ Core classes:
 Run a specific scenario with terminal output:
 
 ```bash
-# Circular orbit with Earth (default)
+# Circular orbit
 python main.py --scenario circular
 
-# Choose a different planet
-python main.py --scenario circular --planet mars
-python main.py --scenario circular --planet jupiter
-
 # Elliptical orbit
-python main.py --scenario elliptical --planet earth
+python main.py --scenario elliptical
 
 # Escape trajectory
-python main.py --scenario escape --planet venus
+python main.py --scenario escape
 ```
-
-Available planets: `mercury`, `venus`, `earth`, `mars`, `jupiter`, `saturn` (case-insensitive)
 
 Output shows time, position, distance from star, and orbital speed at regular intervals.
 
@@ -135,29 +114,26 @@ Output shows time, position, distance from star, and orbital speed at regular in
 
 #### With menu selection:
 ```bash
-# Visualize Earth orbit (default)
 python main.py --visualize
-
-# Choose a different planet
-python main.py --visualize --planet mars
-python main.py --visualize --planet jupiter
 ```
 This opens a menu where you can click to choose a scenario.
 
 #### Direct to a specific scenario:
 ```bash
-python main.py --visualize --scenario circular --planet earth
-python main.py --visualize --scenario circular --planet saturn
+python main.py --visualize --scenario circular
 ```
 
 **Visualization Controls:**
-- **Mouse wheel / +/- keys:** Zoom in/out (50x to 2000x)
-- **Spacebar:** Pause/resume simulation
-- **UP/DOWN arrows:** Adjust simulation speed (0.1x to 10x+)
-- **R:** Reset simulation to initial conditions
-- **G:** Toggle grid overlay
+- **Mouse wheel:** Zoom in/out
+- **WASD keys:** Pan camera up/left/down/right
+- **Click and drag:** Pan camera with mouse
+- **V:** Toggle velocity vector display
+- **G:** Toggle infinite grid overlay
 - **T:** Toggle orbital trail
+- **Spacebar:** Pause/resume simulation
+- **R:** Reset simulation to initial conditions
 - **ESC:** Return to scenario menu
+- **UP/DOWN arrows:** Adjust simulation speed (when paused)
 
 ### Data Export and Plotting
 
@@ -202,7 +178,7 @@ This ordering (velocity before position) gives much better energy conservation t
 
 ### Numerical Integration
 
-The simulator uses a fixed timestep (`dt = 0.001 years`) and advances the universe forward in discrete steps. Each step:
+The simulator uses a fixed timestep (`dt = 0.01`) and advances the universe forward in discrete steps. Each step:
 1. Computes gravitational acceleration based on current positions
 2. Updates velocities using acceleration
 3. Updates positions using new velocities
@@ -210,37 +186,24 @@ The simulator uses a fixed timestep (`dt = 0.001 years`) and advances the univer
 
 This is an approximation of continuous calculus with small rectangles - the smaller the timestep, the more accurate the simulation.
 
-### Real-World Units
-
-The simulation uses astronomical units for realistic scale:
-- **Distance:** Astronomical Units (AU) - 1 AU = Earth-Sun distance ≈ 149.6 million km
-- **Mass:** Solar masses (M☉) - 1 M☉ = mass of the Sun
-- **Time:** Years - 1 year = Earth orbital period
-- **Gravitational constant:** G = 39.478 AU³/(M☉·year²)
-
-At the default simulation speed (1×), 1 complete Earth orbit takes 10 real-world seconds.
-
 ## Known Limitations & Future Work
 
 **Current limitations:**
 - Single central mass only (star doesn't move)
 - 2D simulation (no z-axis)
 - Semi-implicit Euler integration (good but not perfect)
-- Only inner planets and gas giants (no ice giants yet)
+- Arbitrary units (not real-world meters/kg/seconds yet)
 
 **Planned features:**
 - N-body physics (multiple bodies affecting each other)
+- Real-world units (AU, solar masses, meters)
 - Multiple integration methods (Verlet, RK4)
 - Binary star systems
-- 3-body chaos demonstrations (figure-8 orbits)
-- Lagrange point demonstrations
+- 3-body chaos demonstrations
 - Energy/momentum conservation tracking
-- Velocity and acceleration vector visualizations
-- Orbital prediction mode (dotted path showing future trajectory)
-- More planets (Uranus, Neptune, dwarf planets)
-- Click to place custom bodies
-- Adjustable gravitational constant for experiments
-- Customizable trail length and colors
+- Adjustable gravitational constant
+- More scenario presets (Lagrange points, figure-8 orbits)
+- On-screen info display (current distance, speed, energy)
 
 ## Contributing
 
