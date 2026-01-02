@@ -128,7 +128,7 @@ def run_visualization(scenario, planet_data):
 
     # Camera panning settings
     camera_x, camera_y = 0.0, 0.0
-    camera_speed = 1 # AU per second
+    camera_speed = 2 # AU per second
 
     # Setting States
     # Grid toggle
@@ -148,7 +148,7 @@ def run_visualization(scenario, planet_data):
         starfield.append((x, y, brightness))
 
     # Main loop
-    print("Controls: \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mV\033[0m to toggle velocity vector, \033[96mT\033[0m to toggle trail, \033[96mESC\033[0m to return to menu")
+    print("Controls: \033[96mW,A,S,D\033[0m to move around, \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mV\033[0m to toggle velocity vector, \033[96mT\033[0m to toggle trail, \033[96mESC\033[0m to return to menu")
 
     # Create font for HUD
     hud_font = pygame.font.Font(None, 24)
@@ -269,6 +269,7 @@ def run_visualization(scenario, planet_data):
         
         # Draw grid if enabled
         if show_grid:
+            from math import ceil
             grid_color = (40, 40, 40)  # Dark gray
             grid_spacing = 0.5  # Spacing in physics units
             
@@ -278,33 +279,31 @@ def run_visualization(scenario, planet_data):
             visible_height = screen.get_height() / scale  # How many physics units tall?
             
             # Draw vertical lines (parallel to y-axis)
-            # Start from center and go left and right
-            x_physics = 0  # Start at origin
-            while x_physics <= visible_width / 2:
+            # Follow camera position to center grid
+            left_edge = camera_x - (visible_width / 2)
+            right_edge = camera_x + (visible_width / 2)
+            x_physics = ceil(left_edge / grid_spacing) * grid_spacing  # Start at left edge rounded up to nearest grid line
+            while x_physics <= right_edge:
                 # Convert physics x to screen x for both positive and negative
-                screen_x_pos = int(center_x + ((x_physics - camera_x) * scale))
-                screen_x_neg = int(center_x + ((-x_physics - camera_x) * scale))
+                screen_x = int(center_x + ((x_physics - camera_x) * scale))
                 
                 # Draw line from top to bottom of screen
-                pygame.draw.line(screen, grid_color, (screen_x_pos, 0), (screen_x_pos, screen.get_height()), 1)
-                if x_physics != 0:  # Don't draw center line twice
-                    pygame.draw.line(screen, grid_color, (screen_x_neg, 0), (screen_x_neg, screen.get_height()), 1)
+                pygame.draw.line(screen, grid_color, (screen_x, 0), (screen_x, screen.get_height()), 1)
                 
                 x_physics += grid_spacing
-            
+        
             # Draw horizontal lines (parallel to x-axis)
-            y_physics = 0  # Start at origin
-            while y_physics <= visible_height / 2:
-                # Convert physics y to screen y for both positive and negative
-                screen_y_pos = int(center_y - ((y_physics - camera_y) * scale))  # Remember: screen y is flipped
-                screen_y_neg = int(center_y - ((-y_physics - camera_y) * scale))
+            bottom_edge = camera_y - (visible_height / 2)
+            top_edge = camera_y + (visible_height / 2)
+            y_physics = ceil(bottom_edge / grid_spacing) * grid_spacing  # Start at bottom edge rounded up
+            while y_physics <= top_edge:
+                # Convert physics y to screen y
+                screen_y = int(center_y - ((y_physics - camera_y) * scale))  # Remember: screen y is flipped
                 
                 # Draw line from left to right of screen
-                pygame.draw.line(screen, grid_color, (0, screen_y_pos), (screen.get_width(), screen_y_pos), 1)
-                if y_physics != 0:  # Don't draw center line twice
-                    pygame.draw.line(screen, grid_color, (0, screen_y_neg), (screen.get_width(), screen_y_neg), 1)
+                pygame.draw.line(screen, grid_color, (0, screen_y), (screen.get_width(), screen_y), 1)
                 
-                y_physics += grid_spacing
+                y_physics += grid_spacing 
         
         # Update trail
         if not paused:
