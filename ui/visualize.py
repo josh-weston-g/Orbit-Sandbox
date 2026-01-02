@@ -126,6 +126,13 @@ def run_visualization(scenario, planet_data):
     # Velocity vector settings
     velocity_vector_scale = 0.04  # Scale for drawing velocity vector - calculated based on 6.28 AU/year to show ~50 pixel line
 
+    # Camera panning settings
+    camera_x, camera_y = 0.0, 0.0
+    camera_speed = 2 # AU per second
+    # Mouse drag variables
+    dragging = False
+    last_mouse_pos = (0, 0)
+
     # Setting States
     # Grid toggle
     show_grid = False
@@ -144,7 +151,7 @@ def run_visualization(scenario, planet_data):
         starfield.append((x, y, brightness))
 
     # Main loop
-    print("Controls: \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mV\033[0m to toggle velocity vector, \033[96mT\033[0m to toggle trail, \033[96mESC\033[0m to return to menu")
+    print("Controls: \033[96mW,A,S,D\033[0m to move around, \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mV\033[0m to toggle velocity vector, \033[96mT\033[0m to toggle trail, \033[96mESC\033[0m to return to menu")
 
     # Create font for HUD
     hud_font = pygame.font.Font(None, 24)
@@ -168,6 +175,7 @@ def run_visualization(scenario, planet_data):
                     trail = [] # Clear trail
                     elapsed_sim_time = 0.0 # Reset elapsed time
                     elapsed_real_time = 0.0 # Reset real time
+                    camera_x, camera_y = 0.0, 0.0 # Reset camera position
                     print("Simulation reset.")
                 elif event.key == pygame.K_ESCAPE:
                     pygame.quit()
@@ -187,6 +195,30 @@ def run_visualization(scenario, planet_data):
                     show_velocity_vector = not show_velocity_vector
                     print(f"Velocity vector {'enabled' if show_velocity_vector else 'disabled'}.")
 
+            # Mouse drag for panning
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left mouse button
+                    dragging = True
+                    last_mouse_pos = event.pos
+
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:  # Left mouse button
+                    dragging = False
+
+            # Mouse motion for panning
+            if event.type == pygame.MOUSEMOTION and dragging:
+                current_mouse_pos = pygame.mouse.get_pos()
+                # Calculate how much mouse moved in pixels
+                dx = current_mouse_pos[0] - last_mouse_pos[0]
+                dy = current_mouse_pos[1] - last_mouse_pos[1]
+
+                # Convert pixel movement to physics units and adjust camera position
+                # Negative because dragging right should pan view right
+                camera_x -= dx / scale
+                camera_y += dy / scale  # Positive because screen y is flipped
+
+                last_mouse_pos = current_mouse_pos
+
             # Mouse wheel for zooming
             if event.type == pygame.MOUSEWHEEL:
                 # Zoom in/out
@@ -195,9 +227,20 @@ def run_visualization(scenario, planet_data):
                 elif event.y < 0:
                     scale = max(50, scale / 1.1)  # Max zoom out: shows ~16 AU width
 
+        keys = pygame.key.get_pressed()
+
+        # Camera panning with WASD (continuous)
+        if keys[pygame.K_w]:
+            camera_y += camera_speed * frame_time
+        if keys[pygame.K_s]:
+            camera_y -= camera_speed * frame_time
+        if keys[pygame.K_a]:
+            camera_x -= camera_speed * frame_time
+        if keys[pygame.K_d]:
+            camera_x += camera_speed * frame_time
+
         frame_time = clock.tick(FPS) / 1000.0  # milliseconds to seconds
         # Adjust speed multiplier with up/down keys - allows for holding keys down
-        keys = pygame.key.get_pressed()
         speed_change_cooldown -= frame_time
         if speed_change_cooldown <= 0.0:
             if keys[pygame.K_UP]:
@@ -226,12 +269,12 @@ def run_visualization(scenario, planet_data):
         center_x, center_y = 640, 360
         
         # Convert planet position
-        planet_screen_x = center_x + (planet.pos[0] * scale)
-        planet_screen_y = center_y - (planet.pos[1] * scale) # Flip y-axis
+        planet_screen_x = center_x + ((planet.pos[0] - camera_x) * scale)
+        planet_screen_y = center_y - ((planet.pos[1] - camera_y) * scale)  # Flip y-axis
 
         # Convert star position
-        star_screen_x = center_x + (star.pos[0] * scale)
-        star_screen_y = center_y - (star.pos[1] * scale) # Flip y-axis
+        star_screen_x = center_x + ((star.pos[0] - camera_x) * scale)
+        star_screen_y = center_y - ((star.pos[1] - camera_y) * scale)  # Flip y-axis
 
         # Calculate stats for HUD for using numpy
         import numpy as np
@@ -241,8 +284,8 @@ def run_visualization(scenario, planet_data):
         # Calculate velocity vector tip position
         velocity_vector_tip = planet.pos + (planet.vel * velocity_vector_scale)
         # Convert velocity vector tip to screen coordinates
-        velocity_vector_tip_screen_x = center_x + (velocity_vector_tip[0] * scale)
-        velocity_vector_tip_screen_y = center_y - (velocity_vector_tip[1] * scale)  # Flip y-axis
+        velocity_vector_tip_screen_x = center_x + ((velocity_vector_tip[0] - camera_x) * scale)
+        velocity_vector_tip_screen_y = center_y - ((velocity_vector_tip[1] - camera_y) * scale)  # Flip y-axis
 
         screen.fill((0, 0, 0))  # Clear screen with black
 
@@ -252,6 +295,7 @@ def run_visualization(scenario, planet_data):
         
         # Draw grid if enabled
         if show_grid:
+            from math import ceil
             grid_color = (40, 40, 40)  # Dark gray
             grid_spacing = 0.5  # Spacing in physics units
             
@@ -261,33 +305,31 @@ def run_visualization(scenario, planet_data):
             visible_height = screen.get_height() / scale  # How many physics units tall?
             
             # Draw vertical lines (parallel to y-axis)
-            # Start from center and go left and right
-            x_physics = 0  # Start at origin
-            while x_physics <= visible_width / 2:
+            # Follow camera position to center grid
+            left_edge = camera_x - (visible_width / 2)
+            right_edge = camera_x + (visible_width / 2)
+            x_physics = ceil(left_edge / grid_spacing) * grid_spacing  # Start at left edge rounded up to nearest grid line
+            while x_physics <= right_edge:
                 # Convert physics x to screen x for both positive and negative
-                screen_x_pos = int(center_x + (x_physics * scale))
-                screen_x_neg = int(center_x + (-x_physics * scale))
+                screen_x = int(center_x + ((x_physics - camera_x) * scale))
                 
                 # Draw line from top to bottom of screen
-                pygame.draw.line(screen, grid_color, (screen_x_pos, 0), (screen_x_pos, screen.get_height()), 1)
-                if x_physics != 0:  # Don't draw center line twice
-                    pygame.draw.line(screen, grid_color, (screen_x_neg, 0), (screen_x_neg, screen.get_height()), 1)
+                pygame.draw.line(screen, grid_color, (screen_x, 0), (screen_x, screen.get_height()), 1)
                 
                 x_physics += grid_spacing
-            
+        
             # Draw horizontal lines (parallel to x-axis)
-            y_physics = 0  # Start at origin
-            while y_physics <= visible_height / 2:
-                # Convert physics y to screen y for both positive and negative
-                screen_y_pos = int(center_y - (y_physics * scale))  # Remember: screen y is flipped
-                screen_y_neg = int(center_y - (-y_physics * scale))
+            bottom_edge = camera_y - (visible_height / 2)
+            top_edge = camera_y + (visible_height / 2)
+            y_physics = ceil(bottom_edge / grid_spacing) * grid_spacing  # Start at bottom edge rounded up
+            while y_physics <= top_edge:
+                # Convert physics y to screen y
+                screen_y = int(center_y - ((y_physics - camera_y) * scale))  # Remember: screen y is flipped
                 
                 # Draw line from left to right of screen
-                pygame.draw.line(screen, grid_color, (0, screen_y_pos), (screen.get_width(), screen_y_pos), 1)
-                if y_physics != 0:  # Don't draw center line twice
-                    pygame.draw.line(screen, grid_color, (0, screen_y_neg), (screen.get_width(), screen_y_neg), 1)
+                pygame.draw.line(screen, grid_color, (0, screen_y), (screen.get_width(), screen_y), 1)
                 
-                y_physics += grid_spacing
+                y_physics += grid_spacing 
         
         # Update trail
         if not paused:
@@ -304,8 +346,8 @@ def run_visualization(scenario, planet_data):
                 # Convert physics coordinates to screen coordinates
                 trail_screen = []
                 for px, py in trail:
-                    screen_x = int(center_x + (px * scale))
-                    screen_y = int(center_y - (py * scale))
+                    screen_x = int(center_x + ((px - camera_x) * scale))
+                    screen_y = int(center_y - ((py - camera_y) * scale))
                     trail_screen.append((screen_x, screen_y))
                 
                 trail_color = planet_data['color']
