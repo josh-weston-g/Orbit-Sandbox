@@ -433,6 +433,21 @@ def run_visualization(scenario, planet_data):
         screen.blit(velocity_text, (screen_width - velocity_text.get_width() - 10, screen_height - 60))
         screen.blit(velocity_km_text, (screen_width - velocity_km_text.get_width() - 10, screen_height - 35))
 
+        # BOTTOM-LEFT: Scale bar
+        scale_bar_color = (200, 200, 200)
+        scale_bar_x = 20
+        scale_bar_y = screen_height - 40
+        scale_bar_length = int(0.5 * scale)  # Length in pixels that equals 0.5 AU
+        
+        # Draw horizontal line
+        pygame.draw.line(screen, scale_bar_color, (scale_bar_x, scale_bar_y), (scale_bar_x + scale_bar_length, scale_bar_y), 2)
+        # Draw end caps
+        pygame.draw.line(screen, scale_bar_color, (scale_bar_x, scale_bar_y - 5), (scale_bar_x, scale_bar_y + 5), 2)
+        pygame.draw.line(screen, scale_bar_color, (scale_bar_x + scale_bar_length, scale_bar_y - 5), (scale_bar_x + scale_bar_length, scale_bar_y + 5), 2)
+        # Draw label
+        scale_label = hud_font.render("0.5 AU", True, scale_bar_color)
+        screen.blit(scale_label, (scale_bar_x, scale_bar_y - 25))
+
         pygame.display.flip()  # Update the display
 
     # Cleanup
