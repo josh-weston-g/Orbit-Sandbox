@@ -258,8 +258,8 @@ def run_visualization(scenario, planet_data):
         # Calculate velocity vector tip position
         velocity_vector_tip = planet.pos + (planet.vel * velocity_vector_scale)
         # Convert velocity vector tip to screen coordinates
-        velocity_vector_tip_screen_x = center_x + (velocity_vector_tip[0] * scale)
-        velocity_vector_tip_screen_y = center_y - (velocity_vector_tip[1] * scale)  # Flip y-axis
+        velocity_vector_tip_screen_x = center_x + ((velocity_vector_tip[0] - camera_x) * scale)
+        velocity_vector_tip_screen_y = center_y - ((velocity_vector_tip[1] - camera_y) * scale)  # Flip y-axis
 
         screen.fill((0, 0, 0))  # Clear screen with black
 
