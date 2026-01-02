@@ -123,11 +123,16 @@ def run_visualization(scenario, planet_data):
     trail = []
     max_trail_length = 50
 
+    # Velocity vector settings
+    velocity_vector_scale = 0.04  # Scale for drawing velocity vector - calculated based on 6.28 AU/year to show ~50 pixel line
+
     # Setting States
     # Grid toggle
     show_grid = False
     # Trail toggle
     show_trail = True
+    # Velocity vector toggle
+    show_velocity_vector = False
 
     # Create static starfield
     starfield = []
@@ -178,6 +183,9 @@ def run_visualization(scenario, planet_data):
                 elif event.key == pygame.K_t:
                     show_trail = not show_trail
                     print(f"Trail {'enabled' if show_trail else 'disabled'}.")
+                elif event.key == pygame.K_v:
+                    show_velocity_vector = not show_velocity_vector
+                    print(f"Velocity vector {'enabled' if show_velocity_vector else 'disabled'}.")
 
             # Mouse wheel for zooming
             if event.type == pygame.MOUSEWHEEL:
@@ -229,6 +237,12 @@ def run_visualization(scenario, planet_data):
         import numpy as np
         distance = np.linalg.norm(planet.pos - star.pos)
         velocity = np.linalg.norm(planet.vel)
+
+        # Calculate velocity vector tip position
+        velocity_vector_tip = planet.pos + (planet.vel * velocity_vector_scale)
+        # Convert velocity vector tip to screen coordinates
+        velocity_vector_tip_screen_x = center_x + (velocity_vector_tip[0] * scale)
+        velocity_vector_tip_screen_y = center_y - (velocity_vector_tip[1] * scale)  # Flip y-axis
 
         screen.fill((0, 0, 0))  # Clear screen with black
 
@@ -310,7 +324,45 @@ def run_visualization(scenario, planet_data):
         # Draw the planet (scales with zoom, stops shrinking at max zoom out)
         planet_radius = max(2, min(40, int(0.02 * scale)))
         pygame.draw.circle(screen, planet_data['color'], (int(planet_screen_x), int(planet_screen_y)), planet_radius)
-        
+
+        # Draw velocity vector if enabled
+        if show_velocity_vector:
+            pygame.draw.line(screen, (0, 255, 255), 
+                            (int(planet_screen_x), int(planet_screen_y)),
+                            (int(velocity_vector_tip_screen_x), int(velocity_vector_tip_screen_y)), 1)
+            # Draw arrowhead
+            from math import cos, sin, pi
+            normalized_vel = planet.vel / velocity # np.linalg.norm(planet.vel)
+            arrowhead_angle = 150 * (pi / 180) # Convert 150° to radians
+
+            # Wing 1: rotate normalized velocity by +150°
+            wing1_x = normalized_vel[0] * cos(arrowhead_angle) - normalized_vel[1] * sin(arrowhead_angle)
+            wing1_y = normalized_vel[0] * sin(arrowhead_angle) + normalized_vel[1] * cos(arrowhead_angle)
+
+            # Wing 2: rotate normalized velocity by -150°
+            wing2_x = normalized_vel[0] * cos(-arrowhead_angle) - normalized_vel[1] * sin(-arrowhead_angle)
+            wing2_y = normalized_vel[0] * sin(-arrowhead_angle) + normalized_vel[1] * cos(-arrowhead_angle)
+
+            # Scale wing directions to pixel length
+            arrow_length = 10  # Length of arrowhead wings in pixels
+            wing1_offset_x = wing1_x * arrow_length
+            wing1_offset_y = wing1_y * arrow_length
+            wing2_offset_x = wing2_x * arrow_length
+            wing2_offset_y = wing2_y * arrow_length
+            # Calculate wing positions in screen space
+            wing1_screen_x = velocity_vector_tip_screen_x + wing1_offset_x
+            wing1_screen_y = velocity_vector_tip_screen_y - wing1_offset_y # Flip y-axis
+            wing2_screen_x = velocity_vector_tip_screen_x + wing2_offset_x
+            wing2_screen_y = velocity_vector_tip_screen_y - wing2_offset_y # Flip y-axis
+            # Draw arrowhead as a filled triangle
+            arrow_points = [
+                (int(velocity_vector_tip_screen_x), int(velocity_vector_tip_screen_y)), # Tip
+                (int(wing1_screen_x), int(wing1_screen_y)), # Wing 1
+                (int(wing2_screen_x), int(wing2_screen_y)), # Wing 2
+            ]
+            pygame.draw.polygon(screen, (0, 255, 255), arrow_points)
+
+
         # Draw HUD - organized by category in different screen areas
         screen_width = screen.get_width()
         screen_height = screen.get_height()
