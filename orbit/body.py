@@ -8,7 +8,11 @@ class Body:
 
     def apply_acceleration(self, acceleration, dt):
         """Update velocity based on acceleration and time step.
-            Uses semi-implicit Euler integration.
+        
+        NOTE: This method is provided for alternative integration methods.
+        The main simulation uses Velocity Verlet integration directly.
+        
+        Uses semi-implicit Euler integration.
             acceleration: np.array([ax, ay])
             dt: timestep (float)
         """
@@ -16,7 +20,11 @@ class Body:
 
     def update_position(self, dt):
         """Update position based on current velocity and time step.
-            Uses semi-implicit Euler integration.
+        
+        NOTE: This method is provided for alternative integration methods.
+        The main simulation uses Velocity Verlet integration directly.
+        
+        Uses semi-implicit Euler integration.
             dt: timestep (float)
         """
         self.pos += self.vel * dt

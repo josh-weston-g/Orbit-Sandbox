@@ -24,14 +24,18 @@ class Simulation:
         source = self.bodies[0]
         
         for body in self.bodies[1:]:
-            # Compute acceleration due to source
-            acceleration = compute_acceleration(body, source, self.G)
+            # Velocity Verlet Integration
+            # 1. Compute acceleration at current position
+            old_acceleration = compute_acceleration(body, source, self.G)
 
-            # Update velocity (semi-implicit Euler step 1)
-            body.apply_acceleration(acceleration, self.dt)
+            # 2. Update position using current velocity and half acceleration
+            body.pos += body.vel * self.dt + 0.5 * old_acceleration * (self.dt ** 2)
 
-            # Update position (semi-implicit Euler step 2)
-            body.update_position(self.dt)
+            # 3. Compute new acceleration at updated position
+            new_acceleration = compute_acceleration(body, source, self.G)
+
+            # 4. Update velocity using average of old and new acceleration
+            body.vel += 0.5 * (old_acceleration + new_acceleration) * self.dt
         
         # Advance time
         self.time += self.dt
