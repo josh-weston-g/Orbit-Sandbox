@@ -129,6 +129,9 @@ def run_visualization(scenario, planet_data):
     # Camera panning settings
     camera_x, camera_y = 0.0, 0.0
     camera_speed = 2 # AU per second
+    # Mouse drag variables
+    dragging = False
+    last_mouse_pos = (0, 0)
 
     # Setting States
     # Grid toggle
@@ -192,6 +195,29 @@ def run_visualization(scenario, planet_data):
                     show_velocity_vector = not show_velocity_vector
                     print(f"Velocity vector {'enabled' if show_velocity_vector else 'disabled'}.")
 
+            # Mouse drag for panning
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left mouse button
+                    dragging = True
+                    last_mouse_pos = event.pos
+
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:  # Left mouse button
+                    dragging = False
+
+            # Mouse motion for panning
+            if event.type == pygame.MOUSEMOTION and dragging:
+                current_mouse_pos = pygame.mouse.get_pos()
+                # Calculate how much mouse moved in pixels
+                dx = current_mouse_pos[0] - last_mouse_pos[0]
+                dy = current_mouse_pos[1] - last_mouse_pos[1]
+
+                # Convert pixel movement to physics units and adjust camera position
+                # Negative because dragging right should pan view right
+                camera_x -= dx / scale
+                camera_y += dy / scale  # Positive because screen y is flipped
+
+                last_mouse_pos = current_mouse_pos
 
             # Mouse wheel for zooming
             if event.type == pygame.MOUSEWHEEL:
