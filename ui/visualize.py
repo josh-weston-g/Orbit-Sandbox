@@ -100,7 +100,7 @@ def run_visualization(scenario, planet_data):
     clock = pygame.time.Clock()
     FPS = 60
     paused = False
-    scale = max(50, 200 / planet_data['semi_major_axis'])  # pixels per unit distance divided by semi-major axis to adjust zoom based on orbit size
+    scale = max(40, round((200 / planet_data['semi_major_axis']) / 20) * 20)  # pixels per AU divided by semi-major axis to adjust zoom based on orbit size - rounds to nearest 20
     elapsed_sim_time = 0.0
     elapsed_real_time = 0.0
 
@@ -153,7 +153,7 @@ def run_visualization(scenario, planet_data):
         starfield.append((x, y, brightness))
 
     # Main loop
-    print("Controls: \033[96mW,A,S,D\033[0m to move around, \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mV\033[0m to toggle velocity vector, \033[96mT\033[0m to toggle trail, \033[96mESC\033[0m to return to menu")
+    print("Controls: \033[96mW,A,S,D\033[0m to move around, \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mV\033[0m to toggle velocity vector, \033[96mE\033[0m to toggle energy display, \033[96mT\033[0m to toggle trail, \033[96mESC\033[0m to return to menu")
 
     # Create font for HUD
     primary_hud_font = pygame.font.Font(None, 24)
@@ -229,9 +229,9 @@ def run_visualization(scenario, planet_data):
             if event.type == pygame.MOUSEWHEEL:
                 # Zoom in/out
                 if event.y > 0:
-                    scale = min(2000, scale * 1.1)  # Max zoom in limit
+                    scale = min(2000, scale + 20)  # Max zoom in limit
                 elif event.y < 0:
-                    scale = max(50, scale / 1.1)  # Max zoom out: shows ~16 AU width
+                    scale = max(40, scale - 20)  # Max zoom out: shows ~16 AU width
 
         keys = pygame.key.get_pressed()
 
