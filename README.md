@@ -57,14 +57,22 @@ The codebase is organized with clear separation of concerns:
 
 ```
 Orbit-Sandbox/
-├── main.py            # Entry point - CLI argument handling
-├── body.py            # Body class - position, velocity, mass, integration
-├── physics.py         # Gravity calculations and orbital velocity formulas
-├── simulation.py      # Simulation class - physics loop and time stepping
-├── systems.py         # Scenario factory functions (circular, elliptical, escape)
-├── visualize.py       # Pygame visualization and menu system
-├── plot_orbit.py      # Matplotlib plotting script for CSV data
-└── requirements.txt   # Python dependencies
+├── main.py                # Entry point - CLI argument handling
+├── requirements.txt       # Python dependencies
+├── orbit/
+│   ├── __init__.py
+│   ├── body.py            # Body class - position, velocity, mass, integration
+│   ├── physics.py         # Gravity calculations and orbital velocity formulas
+│   ├── planets.py         # Real planet data (orbital parameters and masses)
+│   ├── simulation.py      # Simulation class - physics loop and time stepping
+│   ├── systems.py         # Scenario factory functions (circular, elliptical, escape)
+│   └── units.py           # Unit conversions and constants (AU, years, G)
+├── tools/
+│   ├── __init__.py
+│   └── plot_orbit.py      # Matplotlib plotting script for CSV data
+└── ui/
+    ├── __init__.py
+    └── visualize.py       # Pygame visualization and menu system
 ```
 
 Core classes:
