@@ -123,8 +123,8 @@ def run_visualization(scenario, planet_data):
     trail = []
     max_trail_length = 50
 
-    # Velocity vector settings
-    velocity_vector_scale = 0.04  # Scale for drawing velocity vector - calculated based on 6.28 AU/year to show ~50 pixel line
+    # Vector settings
+    vector_scale = 0.04  # Scale for drawing velocity vector - calculated based on 6.28 AU/year to show ~50 pixel line
 
     # Camera panning settings
     camera_x, camera_y = 0.0, 0.0
@@ -138,8 +138,9 @@ def run_visualization(scenario, planet_data):
     show_grid = False
     # Trail toggle
     show_trail = True
-    # Velocity vector toggle
+    # Vector toggles
     show_velocity_vector = False
+    show_acceleration_vector = False
     # Energy display toggle
     show_energy = False
 
@@ -153,7 +154,7 @@ def run_visualization(scenario, planet_data):
         starfield.append((x, y, brightness))
 
     # Main loop
-    print("Controls: \033[96mW,A,S,D\033[0m to move around, \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mV\033[0m to toggle velocity vector, \033[96mE\033[0m to toggle energy display, \033[96mT\033[0m to toggle trail, \033[96mESC\033[0m to return to menu")
+    print("Controls: \033[96mW,A,S,D\033[0m to move around, \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mV\033[0m to toggle velocity vector, \033[96mC\033[0m to toggle acceleration vector, \033[96mE\033[0m to toggle energy display, \033[96mT\033[0m to toggle trail, \033[96mESC\033[0m to return to menu")
 
     # Create font for HUD
     primary_hud_font = pygame.font.Font(None, 24)
@@ -197,6 +198,9 @@ def run_visualization(scenario, planet_data):
                 elif event.key == pygame.K_v:
                     show_velocity_vector = not show_velocity_vector
                     print(f"Velocity vector {'enabled' if show_velocity_vector else 'disabled'}.")
+                elif event.key == pygame.K_c:
+                    show_acceleration_vector = not show_acceleration_vector
+                    print(f"Acceleration vector {'enabled' if show_acceleration_vector else 'disabled'}.")
                 elif event.key == pygame.K_e:
                     show_energy = not show_energy
                     print(f"Energy display {'enabled' if show_energy else 'disabled'}.")
@@ -294,7 +298,7 @@ def run_visualization(scenario, planet_data):
             total_energy = kinetic_energy + potential_energy
 
         # Calculate velocity vector tip position
-        velocity_vector_tip = planet.pos + (planet.vel * velocity_vector_scale)
+        velocity_vector_tip = planet.pos + (planet.vel * vector_scale)
         # Convert velocity vector tip to screen coordinates
         velocity_vector_tip_screen_x = center_x + ((velocity_vector_tip[0] - camera_x) * scale)
         velocity_vector_tip_screen_y = center_y - ((velocity_vector_tip[1] - camera_y) * scale)  # Flip y-axis
