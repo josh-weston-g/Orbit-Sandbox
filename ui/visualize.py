@@ -128,7 +128,7 @@ def run_visualization(scenario, planet_data):
     max_trail_length = 50
 
     # Vector settings
-    vector_scale = 0.04  # Scale for drawing velocity vector - calculated based on 6.28 AU/year to show ~50 pixel line
+    velocity_vector_scale = 0.04  # Scale for drawing velocity vector - calculated based on 6.28 AU/year to show ~50 pixel line
     arrowhead_angle = 150 * (pi / 180) # Convert 150° to radians
 
     # Camera panning settings
@@ -302,18 +302,6 @@ def run_visualization(scenario, planet_data):
             potential_energy = - sim.G * (star.mass * planet.mass) / distance
             total_energy = kinetic_energy + potential_energy
 
-        # Calculate velocity vector tip position
-        velocity_vector_tip = planet.pos + (planet.vel * vector_scale)
-        # Convert velocity vector tip to screen coordinates
-        velocity_vector_tip_screen_x = center_x + ((velocity_vector_tip[0] - camera_x) * scale)
-        velocity_vector_tip_screen_y = center_y - ((velocity_vector_tip[1] - camera_y) * scale)  # Flip y-axis
-
-        # Calculate acceleration vector tip position
-        acceleration_vector_tip = planet.pos + (planet.acc * vector_scale)
-        # Convert acceleration vector tip to screen coordinates
-        acceleration_vector_tip_screen_x = center_x + ((acceleration_vector_tip[0] - camera_x) * scale)
-        acceleration_vector_tip_screen_y = center_y - ((acceleration_vector_tip[1] - camera_y) * scale)  # Flip y-axis
-
         screen.fill((0, 0, 0))  # Clear screen with black
 
         # Draw starfield
@@ -396,6 +384,12 @@ def run_visualization(scenario, planet_data):
 
         # Draw velocity vector if enabled
         if show_velocity_vector:
+            # Calculate velocity vector tip position
+            velocity_vector_tip = planet.pos + (planet.vel * velocity_vector_scale)
+            # Convert velocity vector tip to screen coordinates
+            velocity_vector_tip_screen_x = center_x + ((velocity_vector_tip[0] - camera_x) * scale)
+            velocity_vector_tip_screen_y = center_y - ((velocity_vector_tip[1] - camera_y) * scale)  # Flip y-axis
+            
             pygame.draw.line(screen, (0, 255, 255), 
                             (int(planet_screen_x), int(planet_screen_y)),
                             (int(velocity_vector_tip_screen_x), int(velocity_vector_tip_screen_y)), 1)
@@ -433,6 +427,16 @@ def run_visualization(scenario, planet_data):
         if show_acceleration_vector:
             acc_magnitude = np.linalg.norm(planet.acc)
             if acc_magnitude > 0:
+                # Target arrow length: similar to velocity arrow (~50-100 pixels)
+                target_pixel_length = 80  # Adjust to taste
+                # This dynamically scales the acceleration vector so it appears at a roughly consistent length
+                acc_vector_scale = target_pixel_length / (acc_magnitude * scale)                
+                # Then use acc_vector_scale instead of vector_scale
+                acceleration_vector_tip = planet.pos + (planet.acc * acc_vector_scale)
+                # Convert acceleration vector tip to screen coordinates
+                acceleration_vector_tip_screen_x = center_x + ((acceleration_vector_tip[0] - camera_x) * scale)
+                acceleration_vector_tip_screen_y = center_y - ((acceleration_vector_tip[1] - camera_y) * scale)  # Flip y-axis
+                
                 pygame.draw.line(screen, (255, 0 , 0),
                                 (int(planet_screen_x), int(planet_screen_y)),
                                 (int(acceleration_vector_tip_screen_x), int(acceleration_vector_tip_screen_y)), 1)
