@@ -31,8 +31,9 @@ class Simulation:
             # 2. Update position using current velocity and half acceleration
             body.pos += body.vel * self.dt + 0.5 * old_acceleration * (self.dt ** 2)
 
-            # 3. Compute new acceleration at updated position
+            # 3. Compute new acceleration at updated position and store it
             new_acceleration = compute_acceleration(body, source, self.G)
+            body.acc = new_acceleration
 
             # 4. Update velocity using average of old and new acceleration
             body.vel += 0.5 * (old_acceleration + new_acceleration) * self.dt

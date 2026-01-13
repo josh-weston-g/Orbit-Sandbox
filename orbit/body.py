@@ -4,6 +4,7 @@ class Body:
     def __init__(self, position, velocity, mass):
         self.pos = np.array(position, dtype=float)   # [x, y]
         self.vel = np.array(velocity, dtype=float)   # [vx, vy]
+        self.acc = np.zeros(2, dtype=float)          # [ax, ay]
         self.mass = float(mass)                      # scalar
 
     def apply_acceleration(self, acceleration, dt):

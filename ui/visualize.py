@@ -1,8 +1,12 @@
 import pygame
+from math import cos, sin, pi
 from orbit.simulation import Simulation
 from orbit.body import Body
 from orbit.systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory
 from orbit.units import distance_to_km, velocity_to_km_per_s
+
+# TODO:
+#TODO adjust acceleration vector scale
 
 def show_menu():
     """Show a simple menu to choose orbital scenario. Returns scenario string or None."""
@@ -123,8 +127,9 @@ def run_visualization(scenario, planet_data):
     trail = []
     max_trail_length = 50
 
-    # Velocity vector settings
+    # Vector settings
     velocity_vector_scale = 0.04  # Scale for drawing velocity vector - calculated based on 6.28 AU/year to show ~50 pixel line
+    arrowhead_angle = 150 * (pi / 180) # Convert 150° to radians
 
     # Camera panning settings
     camera_x, camera_y = 0.0, 0.0
@@ -138,8 +143,9 @@ def run_visualization(scenario, planet_data):
     show_grid = False
     # Trail toggle
     show_trail = True
-    # Velocity vector toggle
+    # Vector toggles
     show_velocity_vector = False
+    show_acceleration_vector = False
     # Energy display toggle
     show_energy = False
 
@@ -153,7 +159,7 @@ def run_visualization(scenario, planet_data):
         starfield.append((x, y, brightness))
 
     # Main loop
-    print("Controls: \033[96mW,A,S,D\033[0m to move around, \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mV\033[0m to toggle velocity vector, \033[96mE\033[0m to toggle energy display, \033[96mT\033[0m to toggle trail, \033[96mESC\033[0m to return to menu")
+    print("Controls: \033[96mW,A,S,D\033[0m to move around, \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mV\033[0m to toggle velocity vector, \033[96mC\033[0m to toggle acceleration vector, \033[96mE\033[0m to toggle energy display, \033[96mT\033[0m to toggle trail, \033[96mESC\033[0m to return to menu")
 
     # Create font for HUD
     primary_hud_font = pygame.font.Font(None, 24)
@@ -197,6 +203,9 @@ def run_visualization(scenario, planet_data):
                 elif event.key == pygame.K_v:
                     show_velocity_vector = not show_velocity_vector
                     print(f"Velocity vector {'enabled' if show_velocity_vector else 'disabled'}.")
+                elif event.key == pygame.K_c:
+                    show_acceleration_vector = not show_acceleration_vector
+                    print(f"Acceleration vector {'enabled' if show_acceleration_vector else 'disabled'}.")
                 elif event.key == pygame.K_e:
                     show_energy = not show_energy
                     print(f"Energy display {'enabled' if show_energy else 'disabled'}.")
@@ -293,12 +302,6 @@ def run_visualization(scenario, planet_data):
             potential_energy = - sim.G * (star.mass * planet.mass) / distance
             total_energy = kinetic_energy + potential_energy
 
-        # Calculate velocity vector tip position
-        velocity_vector_tip = planet.pos + (planet.vel * velocity_vector_scale)
-        # Convert velocity vector tip to screen coordinates
-        velocity_vector_tip_screen_x = center_x + ((velocity_vector_tip[0] - camera_x) * scale)
-        velocity_vector_tip_screen_y = center_y - ((velocity_vector_tip[1] - camera_y) * scale)  # Flip y-axis
-
         screen.fill((0, 0, 0))  # Clear screen with black
 
         # Draw starfield
@@ -381,40 +384,91 @@ def run_visualization(scenario, planet_data):
 
         # Draw velocity vector if enabled
         if show_velocity_vector:
+            # Calculate velocity vector tip position
+            velocity_vector_tip = planet.pos + (planet.vel * velocity_vector_scale)
+            # Convert velocity vector tip to screen coordinates
+            velocity_vector_tip_screen_x = center_x + ((velocity_vector_tip[0] - camera_x) * scale)
+            velocity_vector_tip_screen_y = center_y - ((velocity_vector_tip[1] - camera_y) * scale)  # Flip y-axis
+            
             pygame.draw.line(screen, (0, 255, 255), 
                             (int(planet_screen_x), int(planet_screen_y)),
                             (int(velocity_vector_tip_screen_x), int(velocity_vector_tip_screen_y)), 1)
             # Draw arrowhead
-            from math import cos, sin, pi
             normalized_vel = planet.vel / velocity # np.linalg.norm(planet.vel)
-            arrowhead_angle = 150 * (pi / 180) # Convert 150° to radians
 
             # Wing 1: rotate normalized velocity by +150°
-            wing1_x = normalized_vel[0] * cos(arrowhead_angle) - normalized_vel[1] * sin(arrowhead_angle)
-            wing1_y = normalized_vel[0] * sin(arrowhead_angle) + normalized_vel[1] * cos(arrowhead_angle)
+            vel_wing1_x = normalized_vel[0] * cos(arrowhead_angle) - normalized_vel[1] * sin(arrowhead_angle)
+            vel_wing1_y = normalized_vel[0] * sin(arrowhead_angle) + normalized_vel[1] * cos(arrowhead_angle)
 
             # Wing 2: rotate normalized velocity by -150°
-            wing2_x = normalized_vel[0] * cos(-arrowhead_angle) - normalized_vel[1] * sin(-arrowhead_angle)
-            wing2_y = normalized_vel[0] * sin(-arrowhead_angle) + normalized_vel[1] * cos(-arrowhead_angle)
+            vel_wing2_x = normalized_vel[0] * cos(-arrowhead_angle) - normalized_vel[1] * sin(-arrowhead_angle)
+            vel_wing2_y = normalized_vel[0] * sin(-arrowhead_angle) + normalized_vel[1] * cos(-arrowhead_angle)
 
             # Scale wing directions to pixel length
-            arrow_length = max(5, min(15, int(0.05 * scale)))  # Length of arrowhead wings in pixels - adjust with zoom
-            wing1_offset_x = wing1_x * arrow_length
-            wing1_offset_y = wing1_y * arrow_length
-            wing2_offset_x = wing2_x * arrow_length
-            wing2_offset_y = wing2_y * arrow_length
+            vel_arrow_length = max(5, min(15, int(0.05 * scale)))  # Length of arrowhead wings in pixels - adjust with zoom
+            vel_wing1_offset_x = vel_wing1_x * vel_arrow_length
+            vel_wing1_offset_y = vel_wing1_y * vel_arrow_length
+            vel_wing2_offset_x = vel_wing2_x * vel_arrow_length
+            vel_wing2_offset_y = vel_wing2_y * vel_arrow_length
             # Calculate wing positions in screen space
-            wing1_screen_x = velocity_vector_tip_screen_x + wing1_offset_x
-            wing1_screen_y = velocity_vector_tip_screen_y - wing1_offset_y # Flip y-axis
-            wing2_screen_x = velocity_vector_tip_screen_x + wing2_offset_x
-            wing2_screen_y = velocity_vector_tip_screen_y - wing2_offset_y # Flip y-axis
+            vel_wing1_screen_x = velocity_vector_tip_screen_x + vel_wing1_offset_x
+            vel_wing1_screen_y = velocity_vector_tip_screen_y - vel_wing1_offset_y # Flip y-axis
+            vel_wing2_screen_x = velocity_vector_tip_screen_x + vel_wing2_offset_x
+            vel_wing2_screen_y = velocity_vector_tip_screen_y - vel_wing2_offset_y # Flip y-axis
             # Draw arrowhead as a filled triangle
-            arrow_points = [
+            vel_arrow_points = [
                 (int(velocity_vector_tip_screen_x), int(velocity_vector_tip_screen_y)), # Tip
-                (int(wing1_screen_x), int(wing1_screen_y)), # Wing 1
-                (int(wing2_screen_x), int(wing2_screen_y)), # Wing 2
+                (int(vel_wing1_screen_x), int(vel_wing1_screen_y)), # Wing 1
+                (int(vel_wing2_screen_x), int(vel_wing2_screen_y)), # Wing 2
             ]
-            pygame.draw.polygon(screen, (0, 255, 255), arrow_points)
+            pygame.draw.polygon(screen, (0, 255, 255), vel_arrow_points)
+
+        # Draw acceleration vector if enabled
+        if show_acceleration_vector:
+            acc_magnitude = np.linalg.norm(planet.acc)
+            if acc_magnitude > 0:
+                # Target arrow length: similar to velocity arrow (~50-100 pixels)
+                target_pixel_length = 80  # Adjust to taste
+                # This dynamically scales the acceleration vector so it appears at a roughly consistent length
+                acc_vector_scale = target_pixel_length / (acc_magnitude * scale)                
+                # Then use acc_vector_scale instead of vector_scale
+                acceleration_vector_tip = planet.pos + (planet.acc * acc_vector_scale)
+                # Convert acceleration vector tip to screen coordinates
+                acceleration_vector_tip_screen_x = center_x + ((acceleration_vector_tip[0] - camera_x) * scale)
+                acceleration_vector_tip_screen_y = center_y - ((acceleration_vector_tip[1] - camera_y) * scale)  # Flip y-axis
+                
+                pygame.draw.line(screen, (255, 0 , 0),
+                                (int(planet_screen_x), int(planet_screen_y)),
+                                (int(acceleration_vector_tip_screen_x), int(acceleration_vector_tip_screen_y)), 1)
+                # Draw arrowhead
+                normalized_acc = planet.acc / acc_magnitude
+
+                # Wing 1: rotate normalized acceleration by +150°
+                acc_wing1_x = normalized_acc[0] * cos(arrowhead_angle) - normalized_acc[1] * sin(arrowhead_angle)
+                acc_wing1_y = normalized_acc[0] * sin(arrowhead_angle) + normalized_acc[1] * cos(arrowhead_angle)
+
+                # Wing 2: rotate normalized acceleration by -150°
+                acc_wing2_x = normalized_acc[0] * cos(-arrowhead_angle) - normalized_acc[1] * sin(-arrowhead_angle)
+                acc_wing2_y = normalized_acc[0] * sin(-arrowhead_angle) + normalized_acc[1] * cos(-arrowhead_angle)
+
+                # Scale wing directions to pixel length
+                acc_arrow_length = max(5, min(15, int(0.05 * scale)))  # Length of arrowhead wings in pixels - adjust with zoom
+                acc_wing1_offset_x = acc_wing1_x * acc_arrow_length
+                acc_wing1_offset_y = acc_wing1_y * acc_arrow_length
+                acc_wing2_offset_x = acc_wing2_x * acc_arrow_length
+                acc_wing2_offset_y = acc_wing2_y * acc_arrow_length
+                # Calculate wing positions in screen space
+                acc_wing1_screen_x = acceleration_vector_tip_screen_x + acc_wing1_offset_x
+                acc_wing1_screen_y = acceleration_vector_tip_screen_y - acc_wing1_offset_y # Flip y-axis
+                acc_wing2_screen_x = acceleration_vector_tip_screen_x + acc_wing2_offset_x
+                acc_wing2_screen_y = acceleration_vector_tip_screen_y - acc_wing2_offset_y # Flip y-axis
+                # Draw arrowhead as a filled triangle
+                acc_arrow_points = [
+                    (int(acceleration_vector_tip_screen_x), int(acceleration_vector_tip_screen_y)), # Tip
+                    (int(acc_wing1_screen_x), int(acc_wing1_screen_y)), # Wing 1
+                    (int(acc_wing2_screen_x), int(acc_wing2_screen_y)), # Wing 2
+                ]
+                pygame.draw.polygon(screen, (255, 0, 0), acc_arrow_points)
 
 
         # Draw HUD - organized by category in different screen areas
@@ -445,10 +499,12 @@ def run_visualization(scenario, planet_data):
             screen.blit(te_text, (10, screen_height // 2 + 30))
         
         # BOTTOM-RIGHT: Orbital data
+        gravitational_acceleration_text = primary_hud_font.render(f"Grav. Accel.: {np.linalg.norm(planet.acc):.2f} AU/yr²", True, (255, 255, 255))
         distance_text = primary_hud_font.render(f"Distance: {distance:.2f} AU", True, (255, 255, 255))
         distance_km_text = secondary_hud_font.render(f"{distance_to_km(distance):.2e} km", True, (255, 255, 255))
         velocity_text = primary_hud_font.render(f"Velocity: {velocity:.2f} AU/yr", True, (255, 255, 255))
         velocity_km_text = secondary_hud_font.render(f"{velocity_to_km_per_s(velocity):.2f} km/s", True, (255, 255, 255))
+        screen.blit(gravitational_acceleration_text, (screen_width - gravitational_acceleration_text.get_width() - 10, screen_height - 135))
         screen.blit(distance_text, (screen_width - distance_text.get_width() - 10, screen_height - 110))
         screen.blit(distance_km_text, (screen_width - distance_km_text.get_width() - 10, screen_height - 85))
         screen.blit(velocity_text, (screen_width - velocity_text.get_width() - 10, screen_height - 60))
