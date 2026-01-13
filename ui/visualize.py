@@ -495,10 +495,12 @@ def run_visualization(scenario, planet_data):
             screen.blit(te_text, (10, screen_height // 2 + 30))
         
         # BOTTOM-RIGHT: Orbital data
+        gravitational_acceleration_text = primary_hud_font.render(f"Grav. Accel.: {np.linalg.norm(planet.acc):.2f} AU/yr²", True, (255, 255, 255))
         distance_text = primary_hud_font.render(f"Distance: {distance:.2f} AU", True, (255, 255, 255))
         distance_km_text = secondary_hud_font.render(f"{distance_to_km(distance):.2e} km", True, (255, 255, 255))
         velocity_text = primary_hud_font.render(f"Velocity: {velocity:.2f} AU/yr", True, (255, 255, 255))
         velocity_km_text = secondary_hud_font.render(f"{velocity_to_km_per_s(velocity):.2f} km/s", True, (255, 255, 255))
+        screen.blit(gravitational_acceleration_text, (screen_width - gravitational_acceleration_text.get_width() - 10, screen_height - 135))
         screen.blit(distance_text, (screen_width - distance_text.get_width() - 10, screen_height - 110))
         screen.blit(distance_km_text, (screen_width - distance_km_text.get_width() - 10, screen_height - 85))
         screen.blit(velocity_text, (screen_width - velocity_text.get_width() - 10, screen_height - 60))
