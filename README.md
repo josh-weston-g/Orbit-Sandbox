@@ -10,7 +10,7 @@ A physics-accurate Newtonian orbital mechanics simulator built from first princi
 
 ## What it does
 
-Orbit-Sandbox simulates gravitational interactions between celestial bodies using real Newtonian physics - no predetermined paths, no fake orbits. You set initial conditions (position, velocity, mass), and the simulator evolves the system forward in time using Velocity Verlet integration. Orbital paths emerge naturally from the underlying forces.
+Orbit-Sandbox simulates gravitational interactions between celestial bodies using real Newtonian physics. You set initial conditions (position, velocity, mass), and the simulator evolves the system forward in time using Velocity Verlet integration.
 
 The simulator can run in two modes:
 - **Console mode:** Outputs orbital data to the terminal with periodic position/velocity updates
@@ -24,17 +24,17 @@ Whether you want to explore orbital mechanics, experiment with different initial
   - Circular orbit - stable, constant radius
   - Elliptical orbit - oscillates between periapsis and apoapsis
   - Escape trajectory - hyperbolic path to infinity
-- ⚙️ **Honest physics simulation:**
+- ⚙️ **Physics simulation:**
   - Newtonian gravity (inverse square law)
   - Velocity Verlet integration (2nd order accuracy)
   - Excellent energy conservation
   - Conserves angular momentum
-  - No hardcoded orbital paths
 - 🎮 **Interactive visualization:**
   - Real-time Pygame rendering
   - Mouse wheel zoom with limits
   - Camera panning with WASD keys or click-and-drag
-  - Toggleable velocity vector display with arrowheads
+  - Toggleable velocity vector display
+  - Toggleable acceleration vector display
   - Toggleable grid overlay
   - Orbital trail rendering
   - Pause/resume with spacebar
@@ -61,10 +61,10 @@ Orbit-Sandbox/
 ├── requirements.txt       # Python dependencies
 ├── orbit/
 │   ├── __init__.py
-│   ├── body.py            # Body class - position, velocity, mass, integration
+│   ├── body.py            # Body class - position, velocity, acceleration, mass
 │   ├── physics.py         # Gravity calculations and orbital velocity formulas
 │   ├── planets.py         # Real planet data (orbital parameters and masses)
-│   ├── simulation.py      # Simulation class - physics loop and time stepping
+│   ├── simulation.py      # Simulation class - physics loop, integration and time stepping
 │   ├── systems.py         # Scenario factory functions (circular, elliptical, escape)
 │   └── units.py           # Unit conversions and constants (AU, years, G)
 ├── tools/
@@ -76,8 +76,8 @@ Orbit-Sandbox/
 ```
 
 Core classes:
-- **Body:** Represents a physical object with position, velocity, and mass
-- **Simulation:** Orchestrates the physics loop and advances time
+- **Body:** Represents a physical object with position, velocity, acceleration and mass
+- **Simulation:** Orchestrates the physics loop, integration and advances time
 - **Visualization:** Handles Pygame rendering, menu, and user input
 
 ## Installation
@@ -107,8 +107,12 @@ Core classes:
 Run a specific scenario with terminal output:
 
 ```bash
-# Circular orbit
+# Circular orbit (defaults to Earth if --planet not specified)
 python main.py --scenario circular
+
+# Choose a specific planet
+python main.py --scenario circular --planet mars
+python main.py --scenario circular --planet jupiter
 
 # Elliptical orbit
 python main.py --scenario elliptical
@@ -116,6 +120,8 @@ python main.py --scenario elliptical
 # Escape trajectory
 python main.py --scenario escape
 ```
+
+Available planets: `mercury`, `venus`, `earth`, `mars`, `jupiter`, `saturn` (case-insensitive)
 
 Output shows time, position, distance from star, and orbital speed at regular intervals.
 
@@ -129,7 +135,11 @@ This opens a menu where you can click to choose a scenario.
 
 #### Direct to a specific scenario:
 ```bash
+# Defaults to Earth if --planet not specified
 python main.py --visualize --scenario circular
+
+# Choose a specific planet
+python main.py --visualize --scenario circular --planet saturn
 ```
 
 **Visualization Controls:**
@@ -137,6 +147,7 @@ python main.py --visualize --scenario circular
 - **WASD keys:** Pan camera up/left/down/right
 - **Click and drag:** Pan camera with mouse
 - **V:** Toggle velocity vector display
+- **C:** Toggle acceleration vector display
 - **G:** Toggle infinite grid overlay
 - **T:** Toggle orbital trail
 - **Spacebar:** Pause/resume simulation
@@ -215,7 +226,6 @@ The simulation displays total mechanical energy (kinetic + potential) as a diagn
 - Single central mass only (star doesn't move)
 - 2D simulation (no z-axis)
 - Fixed timestep (not adaptive)
-- Arbitrary units (not real-world meters/kg/seconds yet)
 
 **Planned features:**
 - N-body physics (multiple bodies affecting each other)
