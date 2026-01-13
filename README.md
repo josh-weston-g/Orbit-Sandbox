@@ -229,7 +229,6 @@ The simulation displays total mechanical energy (kinetic + potential) as a diagn
 
 **Planned features:**
 - N-body physics (multiple bodies affecting each other)
-- Real-world units (AU, solar masses, meters)
 - Additional integration methods (RK4, adaptive timestep)
 - Binary star systems
 - 3-body chaos demonstrations
