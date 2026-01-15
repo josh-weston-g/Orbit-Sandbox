@@ -31,6 +31,7 @@ Whether you want to explore orbital mechanics, experiment with different initial
   - Conserves angular momentum
 - 🎮 **Interactive visualization:**
   - Real-time Pygame rendering
+  - Dynamic window resolution (auto-detection or fixed sizes)
   - Mouse wheel zoom with limits
   - Camera panning with WASD keys or click-and-drag
   - Toggleable velocity vector display
@@ -130,8 +131,18 @@ Output shows time, position, distance from star, and orbital speed at regular in
 #### With menu selection:
 ```bash
 python main.py --visualize
+
+# Specify window resolution (defaults to auto)
+python main.py --visualize --resolution 1080p
+python main.py --visualize --resolution 1440p
 ```
 This opens a menu where you can click to choose a scenario.
+
+Available resolutions:
+- `auto` - Auto-detect display size and use borderless fullscreen (default)
+- `720p` - 1280×720 window
+- `1080p` - 1920×1080 window
+- `1440p` - 2560×1440 window
 
 #### Direct to a specific scenario:
 ```bash
@@ -143,13 +154,14 @@ python main.py --visualize --scenario circular --planet saturn
 ```
 
 **Visualization Controls:**
-- **Mouse wheel:** Zoom in/out
+- **Mouse wheel/+/-:** Zoom in/out
 - **WASD keys:** Pan camera up/left/down/right
 - **Click and drag:** Pan camera with mouse
-- **V:** Toggle velocity vector display
-- **C:** Toggle acceleration vector display
-- **G:** Toggle infinite grid overlay
+- **V:** Toggle velocity vector display (cyan arrows)
+- **C:** Toggle acceleration vector display (red arrows)
+- **G:** Toggle infinite grid overlay (0.5 AU spacing)
 - **T:** Toggle orbital trail
+- **E:** Toggle energy display
 - **Spacebar:** Pause/resume simulation
 - **R:** Reset simulation to initial conditions
 - **ESC:** Return to scenario menu
