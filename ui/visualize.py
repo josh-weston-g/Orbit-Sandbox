@@ -125,6 +125,7 @@ def run_visualization(scenario, planet_data):
     max_trail_length = 50
 
     # Vector settings
+    # Acceleration vector scale is defined dynamically later for consistent length
     velocity_vector_scale = 0.04  # Scale for drawing velocity vector - calculated based on 6.28 AU/year to show ~50 pixel line
     arrowhead_angle = 150 * (pi / 180) # Convert 150° to radians
 
