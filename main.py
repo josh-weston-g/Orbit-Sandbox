@@ -53,6 +53,7 @@ if __name__ == "__main__":
     parser.add_argument('--scenario', type=str, choices=['circular', 'elliptical', 'escape'], help='Choose the orbital scenario: circular, elliptical, or escape.')
     parser.add_argument('--visualize', action='store_true', help='Run the visualization instead of console simulation.')
     parser.add_argument('--planet', type=str, default='earth', help='Name of the planet to simulate (default: earth).')
+    parser.add_argument('--resolution', type=str, default='auto', choices=['auto', '720p', '1080p', '1440p'], help='Window resolution (default: auto - use display resolution).')
     args = parser.parse_args()
     
     planet_lower = args.planet.lower()
@@ -60,7 +61,7 @@ if __name__ == "__main__":
         parser.error(f"Invalid planet name '{args.planet}'. Available options are: {', '.join(PLANETS.keys())}.")
 
     if args.visualize:
-        run_visualization(args.scenario, PLANETS[planet_lower])
+        run_visualization(args.scenario, PLANETS[planet_lower], args.resolution)
     else:
         # Console mode: scenario is required
         if args.scenario is None:
