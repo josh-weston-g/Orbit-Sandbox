@@ -5,6 +5,16 @@ from orbit.body import Body
 from orbit.systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory
 from orbit.units import distance_to_km, velocity_to_km_per_s
 
+# TODO:
+#TODO - Look into font scaling with resolution changes
+
+# Resolution mapping
+RESOLUTION_MAP = {
+    '720p': (1280, 720),
+    '1080p': (1920, 1080),
+    '1440p': (2560, 1440)
+}
+
 def show_menu():
     """Show a simple menu to choose orbital scenario. Returns scenario string or None."""
     pygame.init()
@@ -73,7 +83,7 @@ def show_menu():
         pygame.display.flip()
         clock.tick(60)  # Limit to 60 FPS
 
-def run_visualization(scenario, planet_data):
+def run_visualization(scenario, planet_data, resolution):
     """Run the orbit simulation visualization using Pygame."""
     # If no scenario provided, show menu to choose one
     if scenario is None:
@@ -94,7 +104,14 @@ def run_visualization(scenario, planet_data):
     # Initialize Pygame
     pygame.init()
 
-    screen = pygame.display.set_mode((1280, 720))
+    # Set resolution
+    if resolution == 'auto':
+        display_info = pygame.display.Info()
+        window_width, window_height = display_info.current_w, display_info.current_h
+    else:
+        window_width, window_height = RESOLUTION_MAP[resolution]
+
+    screen = pygame.display.set_mode((window_width, window_height), pygame.NOFRAME)
     pygame.display.set_caption("Orbit Simulation Visualization")
 
     # Create a clock to control frame rate
@@ -150,9 +167,9 @@ def run_visualization(scenario, planet_data):
     # Create static starfield
     starfield = []
     import random
-    for _ in range(160):  # Scale star count with larger window
-        x = random.randint(0, 1280) # Screen width
-        y = random.randint(0, 720) # Screen height
+    for _ in range(160):  # Number of stars
+        x = random.randint(0, window_width) # Screen width
+        y = random.randint(0, window_height) # Screen height
         brightness = random.randint(100, 255)
         starfield.append((x, y, brightness))
 
@@ -186,7 +203,7 @@ def run_visualization(scenario, planet_data):
                     print("Simulation reset.")
                 elif event.key == pygame.K_ESCAPE:
                     pygame.quit()
-                    run_visualization(None, planet_data)  # Show menu again
+                    run_visualization(None, planet_data, resolution)  # Show menu again
                     return
                 elif event.key == pygame.K_EQUALS or event.key == pygame.K_KP_PLUS:
                     scale = min(2000, scale * 1.1)  # Max zoom in limit
@@ -279,7 +296,7 @@ def run_visualization(scenario, planet_data):
         # Convert physics coorrdinates to screen coordinates
         # Physics: (0,0) is center, +x right, +y up
         # Screen: (0,0) is top-left, +x right, +y down
-        center_x, center_y = 640, 360
+        center_x, center_y = window_width // 2, window_height // 2
         
         # Convert planet position
         planet_screen_x = center_x + ((planet.pos[0] - camera_x) * scale)
