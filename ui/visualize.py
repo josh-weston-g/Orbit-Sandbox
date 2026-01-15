@@ -175,7 +175,7 @@ def run_visualization(scenario, planet_data, resolution):
         starfield.append((x, y, brightness))
 
     # Main loop
-    print("Controls: \033[96mW,A,S,D\033[0m to move around, \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mV\033[0m to toggle velocity vector, \033[96mC\033[0m to toggle acceleration vector, \033[96mE\033[0m to toggle energy display, \033[96mT\033[0m to toggle trail, \033[96mESC\033[0m to return to menu")
+    print("Controls: \033[96mW,A,S,D\033[0m to move around, \033[96mSPACE\033[0m to pause/resume, \033[96mUP/DOWN\033[0m to adjust speed, \033[96m[/]\033[0m to adjust trail length, \033[96mT\033[0m to toggle trail, \033[96mR\033[0m to reset, \033[96mG\033[0m to toggle grid, \033[96mV\033[0m to toggle velocity vector, \033[96mC\033[0m to toggle acceleration vector, \033[96mE\033[0m to toggle energy, \033[96mESC\033[0m to return to menu")
 
     # Create font for HUD
     primary_hud_font = pygame.font.Font(None, 24)
@@ -225,6 +225,12 @@ def run_visualization(scenario, planet_data, resolution):
                 elif event.key == pygame.K_e:
                     show_energy = not show_energy
                     print(f"Energy display {'enabled' if show_energy else 'disabled'}.")
+                elif event.key == pygame.K_LEFTBRACKET: # '[' key
+                    max_trail_length = max(10, max_trail_length - 10)
+                    print(f"Max trail length: {max_trail_length}")
+                elif event.key == pygame.K_RIGHTBRACKET: # ']' key
+                    max_trail_length += 10
+                    print(f"Max trail length: {max_trail_length}")
 
             # Mouse drag for panning
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -365,7 +371,8 @@ def run_visualization(scenario, planet_data, resolution):
         # Update trail
         if not paused:
             trail.append((planet.pos[0], planet.pos[1]))
-            if len(trail) > max_trail_length:
+            # Always trim trail to max length
+            while len(trail) > max_trail_length:
                 trail.pop(0)  # Remove oldest point
         
         if show_trail:        

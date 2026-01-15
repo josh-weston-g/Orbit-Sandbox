@@ -161,6 +161,7 @@ python main.py --visualize --scenario circular --planet saturn
 - **C:** Toggle acceleration vector display (red arrows)
 - **G:** Toggle infinite grid overlay (0.5 AU spacing)
 - **T:** Toggle orbital trail
+- **[ / ]:** Adjust trail length
 - **E:** Toggle energy display
 - **Spacebar:** Pause/resume simulation
 - **R:** Reset simulation to initial conditions
