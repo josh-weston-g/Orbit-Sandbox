@@ -2,7 +2,7 @@ import numpy as np
 from orbit.body import Body
 from orbit.simulation import Simulation
 from ui.visualize import run_visualization
-from orbit.systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory
+from orbit.systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory, create_binary_stars
 from orbit.planets import PLANETS
 import argparse
 
@@ -12,7 +12,8 @@ def main(scenario, planet_data):
     scenario_map = {
         'circular': create_simple_system,
         'elliptical': create_elliptical_orbit,
-        'escape': create_escape_trajectory
+        'escape': create_escape_trajectory,
+        'binary': create_binary_stars
     }
 
     # Get factory function and create system
