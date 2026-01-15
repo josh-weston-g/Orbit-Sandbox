@@ -17,26 +17,41 @@ class Simulation:
         self.dt = dt
         self.time = 0.0 # Track simulation time
 
-    def step(self):
-        """Execute one simulation step."""
-        # For now, assume first body is the source (star)
-        # and all others orbit it
-        source = self.bodies[0]
+    def _compute_total_acceleration(self, body):
+        """
+        Calculate total gravitational acceleration on a body from all other bodies.
+
+        param: body: Body object to compute acceleration for
+
+        returns: np.array([ax, ay]) total acceleration vector
+        """
+        total_acc = np.zeros(2, dtype=float)
         
-        for body in self.bodies[1:]:
-            # Velocity Verlet Integration
-            # 1. Compute acceleration at current position
-            old_acceleration = compute_acceleration(body, source, self.G)
+        for other in self.bodies:
+            if other is not body: # Skip self
+                total_acc += compute_acceleration(body, other, self.G)
 
-            # 2. Update position using current velocity and half acceleration
-            body.pos += body.vel * self.dt + 0.5 * old_acceleration * (self.dt ** 2)
+        return total_acc
 
-            # 3. Compute new acceleration at updated position and store it
-            new_acceleration = compute_acceleration(body, source, self.G)
-            body.acc = new_acceleration
+    def step(self):
+        """Execute one simulation step using N-body Velocity Verlet integration."""
 
-            # 4. Update velocity using average of old and new acceleration
-            body.vel += 0.5 * (old_acceleration + new_acceleration) * self.dt
+        # Phase 1: Calculate old accelerations for all bodies
+        for body in self.bodies:
+            body.old_acc = self._compute_total_acceleration(body)
+
+        # Phase 2: Update all positions using old accelerations
+        for body in self.bodies:
+            body.pos += body.vel * self.dt + 0.5 * body.old_acc * (self.dt**2)
+
+        # Phase 3: Calculate new accelerations for all bodies at updated positions
+        for body in self.bodies:
+            body.new_acc = self._compute_total_acceleration(body)
+
+        # Phase 4: Update all velocities using average of old and new accelerations
+        for body in self.bodies:
+            body.vel += 0.5 * (body.old_acc + body.new_acc) * self.dt
+            body.acc = body.new_acc  # Store current acceleration for visualization or other uses
         
         # Advance time
         self.time += self.dt
