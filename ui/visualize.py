@@ -108,10 +108,11 @@ def run_visualization(scenario, planet_data, resolution):
     if resolution == 'auto':
         display_info = pygame.display.Info()
         window_width, window_height = display_info.current_w, display_info.current_h
+        screen = pygame.display.set_mode((window_width, window_height), pygame.NOFRAME) # Fullscreen borderless
     else:
         window_width, window_height = RESOLUTION_MAP[resolution]
+        screen = pygame.display.set_mode((window_width, window_height)) # Normal windowed mode
 
-    screen = pygame.display.set_mode((window_width, window_height), pygame.NOFRAME)
     pygame.display.set_caption("Orbit Simulation Visualization")
 
     # Create a clock to control frame rate
@@ -371,7 +372,7 @@ def run_visualization(scenario, planet_data, resolution):
             # Draw the trail
             if len(trail) > 1:
                 # Create one surface for the entire trail
-                trail_surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
+                trail_surface = pygame.Surface((window_width, window_height), pygame.SRCALPHA)
                 
                 # Convert physics coordinates to screen coordinates
                 trail_screen = []
