@@ -7,6 +7,10 @@ class Body:
         self.acc = np.zeros(2, dtype=float)          # [ax, ay]
         self.mass = float(mass)                      # scalar
 
+        # Temporary storage for Velocity Verlet integration
+        self.old_acc = np.zeros(2, dtype=float) # Acceleration at start of time step
+        self.new_acc = np.zeros(2, dtype=float) # Acceleration at end of time step
+
     def apply_acceleration(self, acceleration, dt):
         """Update velocity based on acceleration and time step.
         
