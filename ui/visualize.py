@@ -349,6 +349,36 @@ def run_visualization(scenario, planet_data, resolution):
             
             pygame.draw.circle(screen, color, (int(body_screen_x), int(body_screen_y)), body_radius)
 
+        # Draw pause overlay
+        if paused:
+            # Semi-transparent overlay
+            overlay = pygame.Surface((window_width, window_height), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 128)) # Balck with 50% opacity
+            screen.blit(overlay, (0, 0))
+
+            # Draw pause symbol (two vertical bars)
+            pause_color = (255, 255, 255)
+            bar_width = 40
+            bar_height = 130
+            bar_spacing = 20
+            center_x_pause = window_width // 2
+            center_y_pause = window_height // 2
+
+            # Left bar
+            pygame.draw.rect(screen, pause_color,
+                            (center_x_pause - bar_spacing - bar_width, center_y_pause - bar_height // 2,
+                            bar_width, bar_height))
+            # Right bar
+            pygame.draw.rect(screen, pause_color,
+                            (center_x_pause + bar_spacing, center_y_pause - bar_height // 2,
+                            bar_width, bar_height))
+            
+            # "PAUSED" text
+            pause_font = pygame.font.Font(None, 72)
+            puase_text = pause_font.render("PAUSED", True, pause_color)
+            pause_rect = puase_text.get_rect(center=(center_x_pause, center_y_pause + 110))
+            screen.blit(puase_text, pause_rect)
+
         # === HUD ===
         screen_width = screen.get_width()
         screen_height = screen.get_height()
