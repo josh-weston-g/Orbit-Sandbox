@@ -76,7 +76,7 @@ def show_menu():
             color = hover_color if rect.collidepoint(mouse_pos) else button_color
             pygame.draw.rect(screen, color, rect)
             pygame.draw.rect(screen, text_color, rect, 2)
-            text = font.render(scenario.title(), True, text_color)
+            text = font.render(scenario.title().replace('_', ' '), True, text_color)
             text_rect = text.get_rect(center=rect.center)
             screen.blit(text, text_rect)
 
