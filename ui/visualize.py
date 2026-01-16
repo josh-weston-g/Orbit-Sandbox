@@ -27,7 +27,7 @@ BODY_COLORS = [
 def show_menu():
     """Show a simple menu to choose orbital scenario. Returns scenario string or None."""
     pygame.init()
-    screen = pygame.display.set_mode((600, 560))
+    screen = pygame.display.set_mode((600, 600))
     pygame.display.set_caption("Orbit Simulator - Choose Scenario")
 
     button_width = 400
