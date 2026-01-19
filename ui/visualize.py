@@ -204,6 +204,8 @@ def run_visualization(scenario, planet_data, resolution):
                     show_trail = not show_trail
                 elif event.key == pygame.K_e:
                     show_energy = not show_energy
+                elif event.key == pygame.K_LEFT:
+                    paused = True # Ensure sim is paused when starting rewind
 
             # Mouse drag for panning
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -237,9 +239,14 @@ def run_visualization(scenario, planet_data, resolution):
             camera_x += camera_speed * frame_time
 
         # Rewind controls (while paused)
-        if keys[pygame.K_LEFT] and paused:
-            if sim.rewind_one_step():   # Returns True if succesfully rewound
+        if keys[pygame.K_LEFT]:
+            paused = True
+            if sim.rewind_one_step():
                 elapsed_sim_time = max(0.0, sim.time)
+                # Pop trails for all bodies
+                for trail in trails:
+                    if len(trail) > 0:
+                        trail.pop()
 
         frame_time = clock.tick(FPS) / 1000.0
 
@@ -393,36 +400,6 @@ def run_visualization(scenario, planet_data, resolution):
         pygame.draw.line(screen, scale_bar_color, (scale_bar_x + scale_bar_length, scale_bar_y - 5), (scale_bar_x + scale_bar_length, scale_bar_y + 5), 2)
         scale_label = secondary_hud_font.render("0.5 AU", True, scale_bar_color)
         screen.blit(scale_label, (scale_bar_x, scale_bar_y - 25))
-
-        # Draw pause overlay - has to go here to be on top layer
-        if paused:
-            # Semi-transparent overlay
-            overlay = pygame.Surface((window_width, window_height), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 128)) # Balck with 50% opacity
-            screen.blit(overlay, (0, 0))
-
-            # Draw pause symbol (two vertical bars)
-            pause_color = (255, 255, 255)
-            bar_width = 40
-            bar_height = 130
-            bar_spacing = 20
-            center_x_pause = window_width // 2
-            center_y_pause = window_height // 2
-
-            # Left bar
-            pygame.draw.rect(screen, pause_color,
-                            (center_x_pause - bar_spacing - bar_width, center_y_pause - bar_height // 2,
-                            bar_width, bar_height))
-            # Right bar
-            pygame.draw.rect(screen, pause_color,
-                            (center_x_pause + bar_spacing, center_y_pause - bar_height // 2,
-                            bar_width, bar_height))
-            
-            # "PAUSED" text
-            pause_font = pygame.font.Font(None, 72)
-            puase_text = pause_font.render("PAUSED", True, pause_color)
-            pause_rect = puase_text.get_rect(center=(center_x_pause, center_y_pause + 110))
-            screen.blit(puase_text, pause_rect)
 
         pygame.display.flip()
 
