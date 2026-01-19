@@ -166,7 +166,7 @@ def run_visualization(scenario, planet_data, resolution):
     primary_hud_font = pygame.font.Font(None, 24)
     secondary_hud_font = pygame.font.Font(None, 20)
 
-    print("Controls: \033[96mW,A,S,D\033[0m pan, \033[96mSPACE\033[0m pause, \033[96mUP/DOWN\033[0m speed, \033[96m+/-\033[0m zoom, \033[96mR\033[0m reset, \033[96mG\033[0m grid, \033[96mT\033[0m trail, \033[96mE\033[0m energy, \033[96mESC\033[0m menu")
+    print("Controls: \033[96mW,A,S,D\033[0m pan, \033[96mSPACE\033[0m pause, \033[96mLEFT\033[0m rewind (paused), \033[96mUP/DOWN\033[0m speed, \033[96m+/-\033[0m zoom, \033[96mR\033[0m reset, \033[96mG\033[0m grid, \033[96mT\033[0m trail, \033[96mE\033[0m energy, \033[96mESC\033[0m menu")
 
     # Initialize frame_time before main loop
     frame_time = 0.0
@@ -235,6 +235,11 @@ def run_visualization(scenario, planet_data, resolution):
             camera_x -= camera_speed * frame_time
         if keys[pygame.K_d]:
             camera_x += camera_speed * frame_time
+
+        # Rewind controls (while paused)
+        if keys[pygame.K_LEFT] and paused:
+            if sim.rewind_one_step():   # Returns True if succesfully rewound
+                elapsed_sim_time = max(0.0, sim.time)
 
         frame_time = clock.tick(FPS) / 1000.0
 
