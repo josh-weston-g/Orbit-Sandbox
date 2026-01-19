@@ -25,7 +25,7 @@ BODY_COLORS = [
 ]
 
 def show_menu():
-    """Show a simple menu to choose orbital scenario. Returns scenario string or None."""
+    """Show a simple menu to choose orbital scenario. Returns system path or None."""
     pygame.init()
     
     # Get available systems
@@ -94,7 +94,7 @@ def show_menu():
                             return None
                         else:
                             pygame.quit()
-                            return button_data['path']  # Return the file path instead of scenario name
+                            return button_data['path']  # Return the file path of the selected system
                     
         screen.fill((30, 30, 30))
 
@@ -131,17 +131,16 @@ def show_menu():
         clock.tick(60)
 
 
-def run_visualization(scenario, planet_data, resolution):
+def run_visualization(resolution):
     """Run the orbit simulation visualization using Pygame."""
-    # If no scenario provided, show menu
-    if scenario is None:
-        scenario = show_menu()
-        if scenario is None:
-            return
+    # Show menu to select system
+    system_path = show_menu()
+    if system_path is None:
+        return  # User chose to exit
+
     
     # Load system from JSON file
-    bodies, G, metadata = SystemLoader.load_from_file(scenario)
-
+    bodies, G, metadata = SystemLoader.load_from_file(system_path)
     # Initialize Pygame
     pygame.init()
 
@@ -231,7 +230,7 @@ def run_visualization(scenario, planet_data, resolution):
                     paused = not paused
                 elif event.key == pygame.K_r:
                     # Reset simulation
-                    bodies, G, metadata = SystemLoader.load_from_file(scenario)
+                    bodies, G, metadata = SystemLoader.load_from_file(system_path)
                     sim = Simulation(bodies, G=G, dt=0.001)
                     trails = [[] for _ in sim.bodies]
                     elapsed_sim_time = 0.0
@@ -240,7 +239,7 @@ def run_visualization(scenario, planet_data, resolution):
                     print("Simulation reset.")
                 elif event.key == pygame.K_ESCAPE:
                     pygame.quit()
-                    run_visualization(None, planet_data, resolution)
+                    run_visualization(resolution)
                     return
                 elif event.key == pygame.K_EQUALS or event.key == pygame.K_KP_PLUS:
                     scale = min(2000, scale * 1.1)
