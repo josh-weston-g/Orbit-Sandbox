@@ -1,13 +1,13 @@
 import numpy as np
 from .body import Body
 
-def compute_acceleration(body, source, G=1.0):
+def compute_acceleration(body, other, G=1.0):
     """
     Compute gravitational acceleration on 'body' due to 'source'.
     
     Args:
         body: Body object being affected
-        source: Body object causing the gravitational pull
+        other: Body object causing the gravitational pull
         G: Gravitational constant (default 1.0 for scaled units)
     
     Returns:
@@ -15,7 +15,7 @@ def compute_acceleration(body, source, G=1.0):
     """
 
     # Vector from body to source - points from body to source
-    r_vec = source.pos - body.pos
+    r_vec = other.pos - body.pos
     
     # Calculate distance
     r = np.linalg.norm(r_vec)
@@ -26,7 +26,7 @@ def compute_acceleration(body, source, G=1.0):
     r_hat = r_vec / r
     
     # Gravitational acceleration magnitude
-    a_magnitude = (G * source.mass) / (r**2)
+    a_magnitude = (G * other.mass) / (r**2)
     
     # Acceleration vector
     acceleration = a_magnitude * r_hat
