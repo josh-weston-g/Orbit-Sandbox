@@ -1,11 +1,15 @@
 import numpy as np
 
 class Body:
-    def __init__(self, position, velocity, mass):
+    def __init__(self, position, velocity, mass, name=None, body_type="body"):
         self.pos = np.array(position, dtype=float)   # [x, y]
         self.vel = np.array(velocity, dtype=float)   # [vx, vy]
         self.acc = np.zeros(2, dtype=float)          # [ax, ay]
         self.mass = float(mass)                      # scalar
+
+        # Body identification
+        self.name = name if name is not None else "Unnamed"
+        self.type = body_type
 
         # Temporary storage for Velocity Verlet integration
         self.old_acc = np.zeros(2, dtype=float) # Acceleration at start of time step
