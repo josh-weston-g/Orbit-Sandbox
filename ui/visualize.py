@@ -290,18 +290,17 @@ def run_visualization(scenario, planet_data, resolution):
             while physics_accumulator >= physics_dt:
                 sim.step()
                 physics_accumulator -= physics_dt
+
+                # Update trails every physics step
+                for i, body in enumerate(sim.bodies):
+                    trails[i].append((body.pos[0], body.pos[1]))
+                    while len(trails[i]) > max_trail_length:
+                        trails[i].pop(0)
         else:
             physics_accumulator = 0.0
 
         # Screen center
         center_x, center_y = window_width // 2, window_height // 2
-
-        # Update trails for all bodies
-        if not paused:
-            for i, body in enumerate(sim.bodies):
-                trails[i].append((body.pos[0], body.pos[1]))
-                while len(trails[i]) > max_trail_length:
-                    trails[i].pop(0)
 
         # Calculate system energy if enabled
         if show_energy:
