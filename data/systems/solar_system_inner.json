@@ -1,0 +1,41 @@
+{
+    "name": "Inner Solar System",
+    "description": "Sun with Mercury, Venus, Earth, and Mars in circular orbits",
+    "bodies": [
+    {
+        "mass": 1.0,
+        "position": [0, 0],
+        "velocity": [0, 0],
+        "name": "Sun",
+        "type": "star"
+    },
+    {
+        "mass": 1.66e-7,
+        "position": [0.387, 0],
+        "velocity": [0, 10.099588],
+        "name": "Mercury",
+        "type": "planet"
+    },
+    {
+        "mass": 2.45e-6,
+        "position": [0.723, 0],
+        "velocity": [0, 7.389875],
+        "name": "Venus",
+        "type": "planet"
+    },
+    {
+        "mass": 3.0e-6,
+        "position": [1.0, 0],
+        "velocity": [0, 6.283185],
+        "name": "Earth",
+        "type": "planet"
+    },
+    {
+        "mass": 3.23e-7,
+        "position": [1.524, 0],
+        "velocity": [0, 5.086694],
+        "name": "Mars",
+        "type": "planet"
+    }
+    ]
+}
