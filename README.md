@@ -39,6 +39,7 @@ Whether you want to explore orbital mechanics, experiment with different initial
   - Toggleable grid overlay
   - Orbital trail rendering
   - Pause/resume with spacebar
+  - Rewind simulation
   - Reset simulation with R key
   - ESC to return to menu
 - 🖥️ **Console mode:**
@@ -164,6 +165,7 @@ python main.py --visualize --scenario circular --planet saturn
 - **[ / ]:** Adjust trail length
 - **E:** Toggle energy display
 - **Spacebar:** Pause/resume simulation
+- **LEFT arrow:** Rewind simulation
 - **R:** Reset simulation to initial conditions
 - **ESC:** Return to scenario menu
 - **UP/DOWN arrows:** Adjust simulation speed (when paused)

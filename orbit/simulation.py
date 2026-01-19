@@ -17,6 +17,10 @@ class Simulation:
         self.dt = dt
         self.time = 0.0 # Track simulation time
 
+        # History tracking for rewind
+        self.history = [] # List of (positions, velocities, accelerations)
+        self.max_history = 1000 # Store up to 1000 snapshots
+
     def _compute_total_acceleration(self, body):
         """
         Calculate total gravitational acceleration on a body from all other bodies.
@@ -32,6 +36,21 @@ class Simulation:
                 total_acc += compute_acceleration(body, other, self.G)
 
         return total_acc
+    
+    def save_state(self):
+        """Save current state of all bodies to history."""
+        snapshot = []
+        for body in self.bodies:
+            snapshot.append({
+                'pos': body.pos.copy(),
+                'vel': body.vel.copy(),
+                'acc': body.acc.copy()
+            })
+        self.history.append(snapshot)
+
+        # Limit history size
+        if len(self.history) > self.max_history:
+            self.history.pop(0) # Remove oldest snapshot
 
     def step(self):
         """Execute one simulation step using N-body Velocity Verlet integration."""
@@ -55,6 +74,25 @@ class Simulation:
         
         # Advance time
         self.time += self.dt
+
+        # Save stat
+        self.save_state()
+
+    def rewind_one_step(self):
+        """Rewind the simulation by one saved state."""
+        if len(self.history) > 0:
+            snapshot = self.history.pop()   # Get and remove last snapshot
+            # Restore all bodies to that state
+            for i, body in enumerate(self.bodies):
+                body.pos = snapshot[i]['pos']
+                body.vel = snapshot[i]['vel']
+                body.acc = snapshot[i]['acc']
+
+            # Decrease sim time
+            self.time -= self.dt
+
+            return True # Successfully rewound
+        return False # No history to rewind
     
     def run(self, num_steps):
         """Run the simulation for a given number of steps."""
