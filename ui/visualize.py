@@ -27,12 +27,21 @@ BODY_COLORS = [
 def show_menu():
     """Show a simple menu to choose orbital scenario. Returns scenario string or None."""
     pygame.init()
-    screen = pygame.display.set_mode((600, 600))
+    screen = pygame.display.set_mode((700, 660))
     pygame.display.set_caption("Orbit Simulator - Choose Scenario")
+
+    # Load fonts
+    try:
+        font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 32)
+        title_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Bold.ttf", 48)
+    except FileNotFoundError:
+        print("⚠ JetBrains Mono Nerd Font not found, using system font")
+        font = pygame.font.Font(None, 32)
+        title_font = pygame.font.Font(None, 48)
 
     button_width = 400
     button_height = 60
-    button_x = 100
+    button_x = 150
 
     buttons = {
         'circular': pygame.Rect(button_x, 60, button_width, button_height),
@@ -47,7 +56,6 @@ def show_menu():
     button_color = (70, 70, 70)
     hover_color = (100, 100, 100)
     text_color = (255, 255, 255)
-    font = pygame.font.Font(None, 36)
     clock = pygame.time.Clock()
     running = True
 
@@ -67,9 +75,8 @@ def show_menu():
                     
         screen.fill((30, 30, 30))
 
-        title_font = pygame.font.Font(None, 48)
         title_text = title_font.render("Choose Orbital Scenario", True, text_color)
-        title_rect = title_text.get_rect(center=(300, 30))
+        title_rect = title_text.get_rect(center=(350, 30))
         screen.blit(title_text, title_rect)
 
         for scenario, rect in buttons.items():
@@ -108,6 +115,20 @@ def run_visualization(scenario, planet_data, resolution):
     # Initialize Pygame
     pygame.init()
 
+    # Font Setup
+    try:
+        icon_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 48)
+        primary_hud_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 24)
+        secondary_hud_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 20)
+    except FileNotFoundError:
+        print("⚠ JetBrains Mono Nerd Font not found, using system font")
+        icon_font = pygame.font.Font(None, 48)
+        primary_hud_font = pygame.font.Font(None, 24)
+        secondary_hud_font = pygame.font.Font(None, 20)
+
+    # Nerd Font icon codes
+    PAUSE_ICON = "\uf04c"
+    REWIND_ICON = "\uf04a"
     # Set resolution
     if resolution == 'auto':
         display_info = pygame.display.Info()
@@ -122,7 +143,6 @@ def run_visualization(scenario, planet_data, resolution):
     # Create clock and timing
     clock = pygame.time.Clock()
     FPS = 60
-    paused = False
     scale = 200  # pixels per AU
     elapsed_sim_time = 0.0
     elapsed_real_time = 0.0
@@ -150,6 +170,8 @@ def run_visualization(scenario, planet_data, resolution):
     last_mouse_pos = (0, 0)
 
     # Toggle states
+    paused = False
+    rewinding  = False
     show_grid = False
     show_trail = True
     show_energy = False
@@ -161,10 +183,6 @@ def run_visualization(scenario, planet_data, resolution):
         y = random.randint(0, window_height)
         brightness = random.randint(100, 255)
         starfield.append((x, y, brightness))
-
-    # Fonts
-    primary_hud_font = pygame.font.Font(None, 24)
-    secondary_hud_font = pygame.font.Font(None, 20)
 
     print("Controls: \033[96mW,A,S,D\033[0m pan, \033[96mSPACE\033[0m pause, \033[96mLEFT\033[0m rewind (paused), \033[96mUP/DOWN\033[0m speed, \033[96m+/-\033[0m zoom, \033[96mR\033[0m reset, \033[96mG\033[0m grid, \033[96mT\033[0m trail, \033[96mE\033[0m energy, \033[96mESC\033[0m menu")
 
@@ -206,6 +224,9 @@ def run_visualization(scenario, planet_data, resolution):
                     show_energy = not show_energy
                 elif event.key == pygame.K_LEFT:
                     paused = True # Ensure sim is paused when starting rewind
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT:
+                    rewinding = False
 
             # Mouse drag for panning
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -241,6 +262,7 @@ def run_visualization(scenario, planet_data, resolution):
         # Rewind controls (while paused)
         if keys[pygame.K_LEFT]:
             paused = True
+            rewinding = True
             if sim.rewind_one_step():
                 elapsed_sim_time = max(0.0, sim.time)
                 # Pop trails for all bodies
@@ -370,16 +392,16 @@ def run_visualization(scenario, planet_data, resolution):
         zoom_text = primary_hud_font.render(f"Zoom: {(scale / 200):.2f}x", True, (255, 255, 255))
         bodies_text = primary_hud_font.render(f"Bodies: {len(sim.bodies)}", True, (255, 255, 255))
         screen.blit(fps_text, (screen_width - fps_text.get_width() - 10, 10))
-        screen.blit(zoom_text, (screen_width - zoom_text.get_width() - 10, 35))
-        screen.blit(bodies_text, (screen_width - bodies_text.get_width() - 10, 60))
+        screen.blit(zoom_text, (screen_width - zoom_text.get_width() - 10, 40))
+        screen.blit(bodies_text, (screen_width - bodies_text.get_width() - 10, 70))
 
         # TOP-LEFT: Simulation timing
         sim_speed_text = primary_hud_font.render(f"Speed: {(speed_multiplier * 10):.1f}x", True, (255, 255, 255))
         elapsed_sim_time_text = primary_hud_font.render(f"Sim Time: {elapsed_sim_time:.2f} years", True, (255, 255, 255))
         elapsed_real_time_text = primary_hud_font.render(f"Real Time: {elapsed_real_time:.2f}s", True, (255, 255, 255))
         screen.blit(sim_speed_text, (10, 10))
-        screen.blit(elapsed_sim_time_text, (10, 35))
-        screen.blit(elapsed_real_time_text, (10, 60))
+        screen.blit(elapsed_sim_time_text, (10, 40))
+        screen.blit(elapsed_real_time_text, (10, 70))
 
         # MIDDLE-LEFT: Energy display if enabled
         if show_energy:
@@ -399,7 +421,34 @@ def run_visualization(scenario, planet_data, resolution):
         pygame.draw.line(screen, scale_bar_color, (scale_bar_x, scale_bar_y - 5), (scale_bar_x, scale_bar_y + 5), 2)
         pygame.draw.line(screen, scale_bar_color, (scale_bar_x + scale_bar_length, scale_bar_y - 5), (scale_bar_x + scale_bar_length, scale_bar_y + 5), 2)
         scale_label = secondary_hud_font.render("0.5 AU", True, scale_bar_color)
-        screen.blit(scale_label, (scale_bar_x, scale_bar_y - 25))
+        screen.blit(scale_label, (scale_bar_x, scale_bar_y - 30))
+
+        # === PAUSE/REWIND INDICATOR (Center-Top) ===
+        if rewinding:
+            # Rewind indicator
+            indicator_text = icon_font.render(f"{REWIND_ICON} REWINDING", True, (255, 100, 100))
+            indicator_bg = pygame.Surface((indicator_text.get_width() + 40, indicator_text.get_height() + 20))
+            indicator_bg.set_alpha(200)
+            indicator_bg.fill((40, 20, 20))
+            
+            indicator_x = (screen_width - indicator_bg.get_width()) // 2
+            indicator_y = 20
+            
+            screen.blit(indicator_bg, (indicator_x, indicator_y))
+            screen.blit(indicator_text, (indicator_x + 20, indicator_y + 10))
+
+        elif paused:
+            # Pause indicator
+            indicator_text = icon_font.render(f"{PAUSE_ICON} PAUSED", True, (255, 255, 100))
+            indicator_bg = pygame.Surface((indicator_text.get_width() + 40, indicator_text.get_height() + 20))
+            indicator_bg.set_alpha(200)
+            indicator_bg.fill((40, 40, 20))
+            
+            indicator_x = (screen_width - indicator_bg.get_width()) // 2
+            indicator_y = 20
+            
+            screen.blit(indicator_bg, (indicator_x, indicator_y))
+            screen.blit(indicator_text, (indicator_x + 20, indicator_y + 10))
 
         pygame.display.flip()
 
