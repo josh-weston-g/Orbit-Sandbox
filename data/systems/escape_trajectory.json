@@ -1,0 +1,20 @@
+{
+    "name": "Escape Trajectory",
+    "description": "Earth escaping the Sun's gravity (120% escape velocity)",
+    "bodies": [
+    {
+        "mass": 1.0,
+        "position": [0, 0],
+        "velocity": [0, 0],
+        "name": "Sun",
+        "type": "star"
+    },
+    {
+        "mass": 3.0e-6,
+        "position": [1.0, 0],
+        "velocity": [0, 10.666649236212803],
+        "name": "Earth",
+        "type": "planet"
+    }
+    ]
+}

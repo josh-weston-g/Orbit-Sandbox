@@ -1,0 +1,20 @@
+{
+    "name": "Elliptical Orbit",
+    "description": "Earth in an elliptical orbit around the Sun (70% circular velocity)",
+    "bodies": [
+    {
+        "mass": 1.0,
+        "position": [0, 0],
+        "velocity": [0, 0],
+        "name": "Sun",
+        "type": "star"
+    },
+    {
+        "mass": 3.0e-6,
+        "position": [1.0, 0],
+        "velocity": [0, 4.398229715025710],
+        "name": "Earth",
+        "type": "planet"
+    }
+    ]
+}

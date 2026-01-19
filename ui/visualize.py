@@ -3,7 +3,7 @@ import numpy as np
 import random
 from math import ceil
 from orbit.simulation import Simulation
-from orbit.systems import create_simple_system, create_elliptical_orbit, create_escape_trajectory, create_binary_stars, create_three_body, create_solar_system
+from orbit.loader import SystemLoader
 
 # Resolution mapping
 RESOLUTION_MAP = {
@@ -25,9 +25,24 @@ BODY_COLORS = [
 ]
 
 def show_menu():
-    """Show a simple menu to choose orbital scenario. Returns scenario string or None."""
+    """Show a simple menu to choose orbital scenario. Returns system path or None."""
     pygame.init()
-    screen = pygame.display.set_mode((700, 660))
+    
+    # Get available systems
+    available_systems = SystemLoader.list_systems("data/systems")
+    
+    # Calculate window height based on number of systems
+    num_systems = len(available_systems) if available_systems else 1
+    title_space = 100  # Space for title at top
+    exit_button_space = 100  # Space for exit button at bottom
+    button_width = 400
+    button_height = 60
+    button_x = 150
+    button_spacing = 70
+    start_y = 100
+    window_height = title_space + (num_systems * button_spacing) + exit_button_space
+    
+    screen = pygame.display.set_mode((700, window_height))
     pygame.display.set_caption("Orbit Simulator - Choose Scenario")
 
     # Load fonts
@@ -39,18 +54,22 @@ def show_menu():
         font = pygame.font.Font(None, 32)
         title_font = pygame.font.Font(None, 48)
 
-    button_width = 400
-    button_height = 60
-    button_x = 150
-
-    buttons = {
-        'circular': pygame.Rect(button_x, 60, button_width, button_height),
-        'elliptical': pygame.Rect(button_x, 130, button_width, button_height),
-        'escape': pygame.Rect(button_x, 200, button_width, button_height),
-        'binary': pygame.Rect(button_x, 270, button_width, button_height),
-        'three_body': pygame.Rect(button_x, 340, button_width, button_height),
-        'solar': pygame.Rect(button_x, 410, button_width, button_height),     
-        'exit': pygame.Rect(button_x, 520, button_width, button_height)
+    # Create buttons dynamically from available systems
+    buttons = {}
+    for i, (system_name, system_path) in enumerate(available_systems):
+        button_y = start_y + (i * button_spacing)
+        buttons[system_name] = {
+            'rect': pygame.Rect(button_x, button_y, button_width, button_height),
+            'path': system_path,
+            'display_name': system_name.replace('_', ' ').title()
+        }
+    
+    # Add exit button at the bottom
+    exit_y = start_y + (len(available_systems) * button_spacing) + 30
+    buttons['exit'] = {
+        'rect': pygame.Rect(button_x, exit_y, button_width, button_height),
+        'path': None,
+        'display_name': 'Exit'
     }
 
     button_color = (70, 70, 70)
@@ -68,50 +87,60 @@ def show_menu():
                 return None
             
             if event.type == pygame.MOUSEBUTTONDOWN:
-                for scenario, rect in buttons.items():
-                    if rect.collidepoint(mouse_pos):
-                        pygame.quit()
-                        return scenario
+                for system_name, button_data in buttons.items():
+                    if button_data['rect'].collidepoint(mouse_pos):
+                        if system_name == 'exit':
+                            pygame.quit()
+                            return None
+                        else:
+                            pygame.quit()
+                            return button_data['path']  # Return the file path of the selected system
                     
         screen.fill((30, 30, 30))
 
         title_text = title_font.render("Choose Orbital Scenario", True, text_color)
-        title_rect = title_text.get_rect(center=(350, 30))
+        title_rect = title_text.get_rect(center=(350, 50))  # Fixed from (350, 30)
         screen.blit(title_text, title_rect)
 
-        for scenario, rect in buttons.items():
-            color = hover_color if rect.collidepoint(mouse_pos) else button_color
-            pygame.draw.rect(screen, color, rect)
-            pygame.draw.rect(screen, text_color, rect, 2)
-            text = font.render(scenario.title().replace('_', ' '), True, text_color)
-            text_rect = text.get_rect(center=rect.center)
-            screen.blit(text, text_rect)
+        screen.fill((30, 30, 30))
+
+        # Draw title
+        title_text = title_font.render("Choose Orbital Scenario", True, text_color)
+        title_rect = title_text.get_rect(center=(350, 50))  # Fixed from (350, 30)
+        screen.blit(title_text, title_rect)
+
+        # If no systems found, show error message
+        if not available_systems:
+            error_text = font.render("No systems found in data/systems/", True, (255, 100, 100))
+            error_rect = error_text.get_rect(center=(350, 300))
+            screen.blit(error_text, error_rect)
+        else:
+            # Draw buttons
+            for system_name, button_data in buttons.items():
+                rect = button_data['rect']
+                color = hover_color if rect.collidepoint(mouse_pos) else button_color
+                pygame.draw.rect(screen, color, rect)
+                pygame.draw.rect(screen, text_color, rect, 2)
+                
+                # Use display_name for button text
+                text = font.render(button_data['display_name'], True, text_color)
+                text_rect = text.get_rect(center=rect.center)
+                screen.blit(text, text_rect)
 
         pygame.display.flip()
         clock.tick(60)
 
 
-def run_visualization(scenario, planet_data, resolution):
+def run_visualization(resolution):
     """Run the orbit simulation visualization using Pygame."""
-    # If no scenario provided, show menu
-    if scenario is None:
-        scenario = show_menu()
-        if scenario is None or scenario == 'exit':
-            return
-    
-    # Map scenario string to factory functions
-    scenario_map = {
-        'circular': create_simple_system,
-        'elliptical': create_elliptical_orbit,
-        'escape': create_escape_trajectory,
-        'binary': create_binary_stars,
-        'three_body': create_three_body,
-        'solar': create_solar_system
-    }
-    
-    factory = scenario_map[scenario]
-    bodies, G = factory(planet_data)
+    # Show menu to select system
+    system_path = show_menu()
+    if system_path is None:
+        return  # User chose to exit
 
+    
+    # Load system from JSON file
+    bodies, G, metadata = SystemLoader.load_from_file(system_path)
     # Initialize Pygame
     pygame.init()
 
@@ -201,7 +230,7 @@ def run_visualization(scenario, planet_data, resolution):
                     paused = not paused
                 elif event.key == pygame.K_r:
                     # Reset simulation
-                    bodies, G = factory(planet_data)
+                    bodies, G, metadata = SystemLoader.load_from_file(system_path)
                     sim = Simulation(bodies, G=G, dt=0.001)
                     trails = [[] for _ in sim.bodies]
                     elapsed_sim_time = 0.0
@@ -210,7 +239,7 @@ def run_visualization(scenario, planet_data, resolution):
                     print("Simulation reset.")
                 elif event.key == pygame.K_ESCAPE:
                     pygame.quit()
-                    run_visualization(None, planet_data, resolution)
+                    run_visualization(resolution)
                     return
                 elif event.key == pygame.K_EQUALS or event.key == pygame.K_KP_PLUS:
                     scale = min(2000, scale * 1.1)

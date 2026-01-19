@@ -1,0 +1,20 @@
+{
+    "name": "Binary Star System",
+    "description": "Two equal-mass stars orbiting their common center of mass.",
+    "bodies": [
+        {
+            "name": "Star 1",
+            "type": "star",
+            "mass": 1.0,
+            "position": [0.5, 0.0],
+            "velocity": [0.0, 4.443657137084644]
+        },
+        {
+            "name": "Star 2",
+            "type": "star",
+            "mass": 1.0,
+            "position": [-0.5, 0.0],
+            "velocity": [0.0, -4.443657137084644]
+        }
+    ]
+}
