@@ -13,6 +13,7 @@ A physics-accurate Newtonian orbital mechanics simulator built from first princi
 **Getting Started**
 - [What it does](#what-it-does)
 - [Installation](#installation)
+- [Requirements](#requirements)
 - [Usage](#usage)
 
 **Features & Documentation**
@@ -23,7 +24,6 @@ A physics-accurate Newtonian orbital mechanics simulator built from first princi
 **Technical Details**
 - [Project Structure](#project-structure)
 - [How it Works](#how-it-works)
-- [Requirements](#requirements)
 
 **Project Info**
 - [Known Limitations & Future Work](#known-limitations--future-work)
