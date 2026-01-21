@@ -57,6 +57,12 @@ if __name__ == "__main__":
             next_state = show_main_menu(screen)
             current_state = next_state
 
+        elif current_state == GameState.NEW_SYSTEM:
+            print("Creating New System and Starting Simulation...")
+            # Show new system creation menu and get system data
+            next_state = GameState.MAIN_MENU  # Placeholder for actual new system creation
+            current_state = next_state
+
         elif current_state == GameState.LOAD_SYSTEM:
             print("Loading System and Starting Simulation...")
             # Show systen menu and get chosen system

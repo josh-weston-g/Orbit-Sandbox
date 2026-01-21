@@ -40,6 +40,10 @@ def show_main_menu(screen):
     )
     
     # Button functions
+    def new_system():
+        next_state["value"] = GameState.NEW_SYSTEM
+        menu.disable()
+
     def load_system():
         next_state["value"] = GameState.LOAD_SYSTEM
         menu.disable()
@@ -49,6 +53,7 @@ def show_main_menu(screen):
         menu.disable()
 
     # Create buttons
+    menu.add.button("New System", new_system)
     menu.add.button("Load System", load_system)
     menu.add.button("Quit", quit_game)
 
