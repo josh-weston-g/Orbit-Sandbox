@@ -7,6 +7,29 @@
 A physics-accurate Newtonian orbital mechanics simulator built from first principles. Watch planets orbit stars, create elliptical trajectories, or launch escape maneuvers - all emerging naturally from Newton's laws and numerical integration.
 
 > **⚠️ Work in Progress:** This project is actively under development. Features are being added incrementally, and the codebase is evolving. Expect breaking changes and incomplete functionality.
+ 
+## Contents
+
+**Getting Started**
+- [What it does](#what-it-does)
+- [Installation](#installation)
+- [Requirements](#requirements)
+- [Usage](#usage)
+
+**Features & Documentation**
+- [Current Features](#current-features)
+- [Visualization Controls](#visualization-controls)
+- [Creating Custom Systems](#creating-custom-systems)
+
+**Technical Details**
+- [Project Structure](#project-structure)
+- [How it Works](#how-it-works)
+
+**Project Info**
+- [Known Limitations & Future Work](#known-limitations--future-work)
+- [Contributing](#contributing)
+- [License](#license)
+- [Author](#author)
 
 ## What it does
 
@@ -112,6 +135,12 @@ Core classes:
       pip install -r requirements.txt
     ```
 
+## Requirements
+
+- **Python 3.12 or 3.13** (Python 3.14 not yet supported due to pygame compatibility issues)
+- NumPy
+- Pygame
+
 ## Usage
 
 ```bash
@@ -188,12 +217,6 @@ Create a JSON file in `data/systems/` with this format:
 - G defaults to 39.478 AU³/(M☉·year²) if not specified
 
 The system will automatically appear in the menu on the next launch. Use the circular orbit velocity formula for stable orbits: `v = sqrt(G * M / r)` where M is the central mass and r is the orbital radius.
-
-## Requirements
-
-- **Python 3.12 or 3.13** (Python 3.14 not yet supported due to pygame compatibility issues)
-- NumPy
-- Pygame
 
 ## How it Works
 
