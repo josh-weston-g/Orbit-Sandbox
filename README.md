@@ -58,7 +58,8 @@ The interactive Pygame visualization provides real-time rendering with zoom, pan
   - Rewind capability with full state history
 - 🎮 **Interactive visualization:**
   - Real-time Pygame rendering
-  - Dynamic menu system
+  - State-based menu system using pygame_menu
+  - Main menu with system selection
   - Dynamic window resolution (auto-detection or fixed sizes)
   - Mouse wheel zoom
   - Camera panning with WASD keys or click-and-drag
@@ -84,7 +85,7 @@ The codebase is organized with clear separation of concerns:
 
 ```
 Orbit-Sandbox/
-├── main.py                # Entry point - resolution argument handling
+├── main.py                # Entry point - state machine, resolution handling
 ├── requirements.txt       # Python dependencies
 ├── assets/
 │   └── fonts/             # JetBrains Mono Nerd Font (Regular and Bold)
@@ -106,14 +107,18 @@ Orbit-Sandbox/
 │   └── units.py           # Unit conversions and constants (AU, years, G)
 └── ui/
     ├── __init__.py
-    └── visualize.py       # Pygame visualization, dynamic menu, and user input handling
+    ├── game_state.py      # GameState enum for application state management
+    ├── menu.py            # Menu system using pygame_menu (main menu, system selection)
+    └── visualize.py       # Pygame visualization and simulation rendering
 ```
 
 Core classes:
 - **Body:** Represents a physical object with position, velocity, acceleration, mass, name, and type
 - **Simulation:** Orchestrates the N-body physics loop, Velocity Verlet integration, state history, and time manipulation
 - **SystemLoader:** Loads orbital systems from JSON files and discovers available systems
-- **Visualization:** Handles Pygame rendering, dynamic menu generation, and interactive controls
+- **GameState:** Enum defining application states (MAIN_MENU, LOAD_SYSTEM, SIMULATION, QUIT)
+- **Menu System:** pygame_menu-based menus for navigation and system selection
+- **Visualization:** Handles Pygame rendering and simulation controls
 
 ## Installation
 
@@ -140,6 +145,7 @@ Core classes:
 - **Python 3.12 or 3.13** (Python 3.14 not yet supported due to pygame compatibility issues)
 - NumPy
 - Pygame
+- pygame-menu
 
 ## Usage
 
@@ -305,7 +311,7 @@ The simulation displays total mechanical energy (kinetic + potential) as a diagn
 - Camera follow modes (follow specific bodies or barycenter)
 - Additional integration methods (RK4, adaptive timestep)
 - More scenario presets (Lagrange points, figure-8 orbits, Pluto)
-- Improved menu system
+- Pause menu (in-sim menu with settings, quit options)
 - Trajectory prediction (show future path)
 
 ## Contributing
