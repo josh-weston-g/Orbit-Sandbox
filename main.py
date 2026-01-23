@@ -9,7 +9,7 @@ Options:
 """
 
 import argparse
-from ui.visualize import run_visualization
+from ui.visualize import run_simulation
 from ui.menu import show_main_menu, show_system_menu
 import pygame
 from ui.game_state import GameState
@@ -52,29 +52,29 @@ if __name__ == "__main__":
 
     while current_state != GameState.QUIT:
         if current_state == GameState.MAIN_MENU:
-            print("Entering Main Menu...")
+            print("Entering Main Menu...") #! Remove for prod
             # Call the menu and get back which state to go to next
             next_state = show_main_menu(screen)
             current_state = next_state
 
         elif current_state == GameState.NEW_SYSTEM:
-            print("Creating New System and Starting Simulation...")
+            print("Creating New System and Starting Simulation...") #! Remove for prod
             # Show new system creation menu and get system data
             next_state = GameState.MAIN_MENU  # Placeholder for actual new system creation
             current_state = next_state
 
         elif current_state == GameState.LOAD_SYSTEM:
-            print("Loading System and Starting Simulation...")
+            print("Loading System and Starting Simulation...") #! Remove for prod
             # Show systen menu and get chosen system
             next_state, system_path = show_system_menu(screen)
             selected_system = system_path
             current_state = next_state
 
         elif current_state == GameState.SIMULATION:
-            print("Starting Simulation...")
-            #TODO: Run simulation with selected system
-            # For now, just go back to the menu
-            current_state = GameState.MAIN_MENU
+            print("Starting Simulation...") #! Remove for prod
+            # Run the simulation with the selected system
+            next_state = run_simulation(screen, selected_system)
+            current_state = next_state
 
     pygame.quit()
-    print("Exiting application...")
+    print("Exiting application...") #! Remove for prod

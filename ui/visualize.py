@@ -4,147 +4,39 @@ import random
 from math import ceil
 from orbit.simulation import Simulation
 from orbit.loader import SystemLoader
+from .game_state import GameState
 
-# Resolution mapping
-RESOLUTION_MAP = {
-    '720p': (1280, 720),
-    '1080p': (1920, 1080),
-    '1440p': (2560, 1440)
-}
-
-# Color palette for bodies
+# Body colors for visualization
 BODY_COLORS = [
-    (255, 255, 0),    # Yellow
-    (100, 150, 255),  # Blue
-    (255, 100, 100),  # Red
-    (100, 255, 100),  # Green
-    (255, 150, 50),   # Orange
-    (200, 100, 255),  # Purple
-    (255, 255, 255),  # White
-    (0, 255, 255),    # Cyan
+    (255, 215, 0),   # Gold (Sun)
+    (169, 169, 169), # Gray (Mercury)
+    (255, 198, 73),  # Pale yellow (Venus)
+    (100, 149, 237), # Cornflower blue (Earth)
+    (205, 92, 92),   # Indian red (Mars)
+    (210, 180, 140), # Tan (Jupiter)
+    (238, 232, 170), # Pale goldenrod (Saturn)
+    (175, 238, 238), # Pale turquoise (Uranus)
+    (65, 105, 225),  # Royal blue (Neptune)
 ]
 
-def show_menu():
-    """Show a simple menu to choose orbital scenario. Returns system path or None."""
-    pygame.init()
+# Main visualization function
+def run_simulation(screen, system_path):
+    """
+    Run the orbital simulation
     
-    # Get available systems
-    available_systems = SystemLoader.list_systems("data/systems")
-    
-    # Calculate window height based on number of systems
-    num_systems = len(available_systems) if available_systems else 1
-    title_space = 100  # Space for title at top
-    exit_button_space = 100  # Space for exit button at bottom
-    button_width = 400
-    button_height = 60
-    button_x = 150
-    button_spacing = 70
-    start_y = 100
-    window_height = title_space + (num_systems * button_spacing) + exit_button_space
-    
-    screen = pygame.display.set_mode((700, window_height))
-    pygame.display.set_caption("Orbit Simulator - Choose Scenario")
+    param: screen: Pygame display surface
+    param: system_path: Path to the JSON file defining the orbital system
+
+    return: GameState: Next state to transition to
+    """
+    # Load system
+    bodies, G, metadata = SystemLoader.load_from_file(system_path)
+
+    # Get screen dimension 
+    window_width = screen.get_width()
+    window_height = screen.get_height()
 
     # Load fonts
-    try:
-        font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 32)
-        title_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Bold.ttf", 48)
-    except FileNotFoundError:
-        print("⚠ JetBrains Mono Nerd Font not found, using system font")
-        font = pygame.font.Font(None, 32)
-        title_font = pygame.font.Font(None, 48)
-
-    # Create buttons dynamically from available systems
-    buttons = {}
-    for i, (system_name, system_path) in enumerate(available_systems):
-        button_y = start_y + (i * button_spacing)
-        buttons[system_name] = {
-            'rect': pygame.Rect(button_x, button_y, button_width, button_height),
-            'path': system_path,
-            'display_name': system_name.replace('_', ' ').title()
-        }
-    
-    # Add exit button at the bottom
-    exit_y = start_y + (len(available_systems) * button_spacing) + 30
-    buttons['exit'] = {
-        'rect': pygame.Rect(button_x, exit_y, button_width, button_height),
-        'path': None,
-        'display_name': 'Exit'
-    }
-
-    button_color = (70, 70, 70)
-    hover_color = (100, 100, 100)
-    text_color = (255, 255, 255)
-    clock = pygame.time.Clock()
-    running = True
-
-    while running:
-        mouse_pos = pygame.mouse.get_pos()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                pygame.quit()
-                return None
-            
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                for system_name, button_data in buttons.items():
-                    if button_data['rect'].collidepoint(mouse_pos):
-                        if system_name == 'exit':
-                            pygame.quit()
-                            return None
-                        else:
-                            pygame.quit()
-                            return button_data['path']  # Return the file path of the selected system
-                    
-        screen.fill((30, 30, 30))
-
-        title_text = title_font.render("Choose Orbital Scenario", True, text_color)
-        title_rect = title_text.get_rect(center=(350, 50))  # Fixed from (350, 30)
-        screen.blit(title_text, title_rect)
-
-        screen.fill((30, 30, 30))
-
-        # Draw title
-        title_text = title_font.render("Choose Orbital Scenario", True, text_color)
-        title_rect = title_text.get_rect(center=(350, 50))  # Fixed from (350, 30)
-        screen.blit(title_text, title_rect)
-
-        # If no systems found, show error message
-        if not available_systems:
-            error_text = font.render("No systems found in data/systems/", True, (255, 100, 100))
-            error_rect = error_text.get_rect(center=(350, 300))
-            screen.blit(error_text, error_rect)
-        else:
-            # Draw buttons
-            for system_name, button_data in buttons.items():
-                rect = button_data['rect']
-                color = hover_color if rect.collidepoint(mouse_pos) else button_color
-                pygame.draw.rect(screen, color, rect)
-                pygame.draw.rect(screen, text_color, rect, 2)
-                
-                # Use display_name for button text
-                text = font.render(button_data['display_name'], True, text_color)
-                text_rect = text.get_rect(center=rect.center)
-                screen.blit(text, text_rect)
-
-        pygame.display.flip()
-        clock.tick(60)
-
-
-def run_visualization(resolution):
-    """Run the orbit simulation visualization using Pygame."""
-    # Show menu to select system
-    system_path = show_menu()
-    if system_path is None:
-        return  # User chose to exit
-
-    
-    # Load system from JSON file
-    bodies, G, metadata = SystemLoader.load_from_file(system_path)
-    # Initialize Pygame
-    pygame.init()
-
-    # Font Setup
     try:
         icon_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 48)
         primary_hud_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 24)
@@ -158,23 +50,13 @@ def run_visualization(resolution):
     # Nerd Font icon codes
     PAUSE_ICON = "\uf04c"
     REWIND_ICON = "\uf04a"
-    # Set resolution
-    if resolution == 'auto':
-        display_info = pygame.display.Info()
-        window_width, window_height = display_info.current_w, display_info.current_h
-        screen = pygame.display.set_mode((window_width, window_height), pygame.NOFRAME)
-    else:
-        window_width, window_height = RESOLUTION_MAP[resolution]
-        screen = pygame.display.set_mode((window_width, window_height))
 
-    pygame.display.set_caption("Orbit Simulation Visualization")
-
-    # Create clock and timing
+    # Create clock and timing and set initial scale
     clock = pygame.time.Clock()
     FPS = 60
-    scale = 200  # pixels per AU
     elapsed_sim_time = 0.0
     elapsed_real_time = 0.0
+    scale = 200  # pixels per AU
 
     # Create simulation
     sim = Simulation(bodies, G=G, dt=0.001)
@@ -190,7 +72,7 @@ def run_visualization(resolution):
 
     # Trail settings - one trail per body
     max_trail_length = 200
-    trails = [[] for _ in sim.bodies]  # List of trails, one per body
+    trails = [[] for _ in sim.bodies]  # List of trails
 
     # Camera settings
     camera_x, camera_y = 0.0, 0.0
@@ -213,20 +95,23 @@ def run_visualization(resolution):
         brightness = random.randint(100, 255)
         starfield.append((x, y, brightness))
 
-    print("Controls: \033[96mW,A,S,D\033[0m pan, \033[96mSPACE\033[0m pause, \033[96mLEFT\033[0m rewind (paused), \033[96mUP/DOWN\033[0m speed, \033[96m+/-\033[0m zoom, \033[96mR\033[0m reset, \033[96mG\033[0m grid, \033[96mT\033[0m trail, \033[96mE\033[0m energy, \033[96mESC\033[0m menu")
+    print("Controls: \033[96mW,A,S,D\033[0m pan, \033[96mSPACE\033[0m pause, \033[96mLEFT\033[0m rewind, \033[96mUP/DOWN\033[0m speed, \033[96m+/-\033[0m zoom, \033[96mR\033[0m reset, \033[96mG\033[0m grid, \033[96mT\033[0m trail, \033[96mE\033[0m energy, \033[96mESC\033[0m menu")  
 
-    # Initialize frame_time before main loop
+    # Initialize frame_time
     frame_time = 0.0
 
+    # Main simulation loop
     running = True
     while running:
         # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                return GameState.QUIT  # User closed window
             
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_ESCAPE:
+                    return GameState.MAIN_MENU  # Return to main menu
+                elif event.key == pygame.K_SPACE:
                     paused = not paused
                 elif event.key == pygame.K_r:
                     # Reset simulation
@@ -236,15 +121,10 @@ def run_visualization(resolution):
                     elapsed_sim_time = 0.0
                     elapsed_real_time = 0.0
                     camera_x, camera_y = 0.0, 0.0
-                    print("Simulation reset.")
-                elif event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    run_visualization(resolution)
-                    return
                 elif event.key == pygame.K_EQUALS or event.key == pygame.K_KP_PLUS:
-                    scale = min(2000, scale * 1.1)
+                    scale = min(2000, scale + 20)
                 elif event.key == pygame.K_MINUS or event.key == pygame.K_KP_MINUS:
-                    scale = max(50, scale / 1.1)
+                    scale = max(40, scale - 20)
                 elif event.key == pygame.K_g:
                     show_grid = not show_grid
                 elif event.key == pygame.K_t:
@@ -479,5 +359,3 @@ def run_visualization(resolution):
             screen.blit(indicator_text, (indicator_x + 20, indicator_y + 10))
 
         pygame.display.flip()
-
-    pygame.quit()
