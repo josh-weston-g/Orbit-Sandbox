@@ -253,19 +253,22 @@ def _compute_total_acceleration(self, body):
 The simulator uses **Velocity Verlet integration** (2nd order accuracy) to update positions and velocities:
 
 ```python
-# 1. Calculate acceleration at current position for all bodies
-old_accelerations = [compute_total_acceleration(i) for i in range(n)]
+# Phase 1: Calculate old accelerations for all bodies
+for body in self.bodies:
+    body.old_acc = self._compute_total_acceleration(body)
 
-# 2. Update positions with half-step correction
-for i, body in enumerate(bodies):
-    body.pos += body.vel * dt + 0.5 * old_accelerations[i] * dt²
+# Phase 2: Update all positions using old acceleratio
+for body in self.bodies:
+    body.pos += body.vel * dt + 0.5 * body.old_acc * dt²
 
-# 3. Calculate acceleration at new positions
-new_accelerations = [compute_total_acceleration(i) for i in range(n)]
+# Phase 3: Calculate new acceleration for all bodies at updated positions
+for body in self.bodies:
+    body.new_acc = self._compute_total_acceleration(body)
 
-# 4. Update velocities using average acceleration
-for i, body in enumerate(bodies):
-    body.vel += 0.5 * (old_accelerations[i] + new_accelerations[i]) * dt
+# Phase 4: Update all velocities using average of old and new accelerations
+for body in self.bodies:
+    body.vel += 0.5 * (body.old_acc + body.new_acc) * dt
+    body.acc = body.new_acc
 ```
 
 This method evaluates acceleration at both the start and end of each timestep, using their average for velocity updates. This provides 2nd-order accuracy and excellent long-term energy conservation, keeping orbits stable over thousands of orbits.
@@ -278,13 +281,13 @@ The simulator maintains a limited state history, allowing full rewind functional
 def save_state(self):
     """Save current state to history for rewind capability."""
     state = [(body.pos.copy(), body.vel.copy()) for body in self.bodies]
-    self.state_history.append(state)
+    self.history.append(state)
 
 def rewind_one_step(self):
     """Rewind simulation by one step."""
     if len(self.state_history) > 1:
-        self.state_history.pop()  # Remove current state
-        state = self.state_history[-1]  # Get previous state
+        self.history.pop()  # Remove current state
+        state = self.history[-1]  # Get previous state
         for i, body in enumerate(self.bodies):
             body.pos, body.vel = state[i][0].copy(), state[i][1].copy()
 ```
