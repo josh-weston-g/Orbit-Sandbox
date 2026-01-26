@@ -75,32 +75,79 @@ def show_system_menu(screen):
 
     result = {"next_state": None, "system_path": None}
 
-    # Get available systems from the data/systems directory
-    available_systems = SystemLoader.list_systems("data/systems")
+    # Get categorized systems
+    systems = SystemLoader.list_systems()
+    default_systems = systems['default']
+    custom_systems = systems['custom']
 
     # Get screen dimensions
     screen_width, screen_height = screen.get_size()
     menu_width = screen_width - 10
     menu_height = screen_height - 10
 
+    # Calculate frame sizes (relative to screen size)
+    # Each frame gets 35% of screen height, leaving room for title, labels, back button
+    frame_height = int(screen_height * 0.35)
+    frame_width = int(screen_width * 0.25)
+
     menu = pygame_menu.Menu(
-        title="Select a System",
+        title="Load System",
         width=menu_width,
         height=menu_height,
         theme=CUSTOM_THEME
     )
 
-    # For each system, add a button
-    for system_name, system_path in available_systems:
+    # Add "Default Systems" header label
+    menu.add.label("Default Systems", font_size=30)  #! Make it look like a header
+    menu.add.vertical_margin(10)
+
+    # Create a scrollable frame for default systems
+    default_frame = menu.add.frame_v(
+        width=frame_width,
+        height=frame_height,
+        background_color=(30, 30, 30),  # Slightly different shade to show the frame
+        padding=10
+    )
+
+    # Add buttons for default systems
+    for system_name, system_path in default_systems:
         def select_system(path=system_path):
             result["next_state"] = GameState.SIMULATION
             result["system_path"] = path
             menu.disable()
-        
-        menu.add.button(system_name.replace("_", " ").title(), select_system)
+
+        display_name = system_name.replace('_', ' ').title()
+        button = menu.add.button(display_name, select_system, margin=(0, 0))
+        default_frame.pack(button, align=pygame_menu.locals.ALIGN_CENTER)
+
+    # Add spacing between categories
+    menu.add.vertical_margin(30)
+
+    # Add "Custom Systems" header label
+    menu.add.label("Custom Systems", font_size=30)  #! Make it look like a header
+    menu.add.vertical_margin(10)
+
+    # Create a scrollable frame for custom systems
+    custom_frame = menu.add.frame_v(
+        width=frame_width,
+        height=frame_height,
+        background_color=(30, 30, 30),
+        padding=10
+    )
+
+    # Add buttons for custom systems
+    for system_name, system_path in custom_systems:
+        def select_system(path=system_path):
+            result["next_state"] = GameState.SIMULATION
+            result["system_path"] = path
+            menu.disable()
+
+        display_name = system_name.replace('_', ' ').title()
+        button = menu.add.button(display_name, select_system, margin=(0, 0))
+        custom_frame.pack(button, align=pygame_menu.locals.ALIGN_CENTER)
 
     # Add spacing before back button
-    menu.add.vertical_margin(50)  # 50 pixels of vertical space
+    menu.add.vertical_margin(50)
 
     # Add a back button
     def go_back():

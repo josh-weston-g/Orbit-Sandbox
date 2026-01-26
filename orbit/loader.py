@@ -57,19 +57,38 @@ class SystemLoader:
         return SystemLoader.load_from_dict(data)
     
     @staticmethod
-    def list_systems(directory='data/systems'):
+    def list_systems():
         """
         List available system JSON files in a directory.
-        
-        param: directory: path to directory containing JSON files
 
-        returns: list of tuples: (filename_without_extension, full_path)
+        returns: dict: { 'default': [(name, path), ...], 
+                        'custom': [(name, path), ...]}
         """
-        systems = []
-        if os.path.exists(directory):
-            for filename in os.listdir(directory):
+        import os
+
+        default_dir = 'data/default_systems'
+        custom_dir = 'data/custom_systems'
+
+        default_systems = []
+        custom_systems = []
+
+        # Get default systems
+        if os.path.exists(default_dir):
+            for filename in os.listdir(default_dir):
                 if filename.endswith('.json'):
                     name = filename[:-5]  # Remove .json extension
-                    full_path = os.path.join(directory, filename)
-                    systems.append((name, full_path))
-        return sorted(systems)
+                    path = os.path.join(default_dir, filename)
+                    default_systems.append((name, path))
+
+        # Get custom systems
+        if os.path.exists(custom_dir):
+            for filename in os.listdir(custom_dir):
+                if filename.endswith('.json'):
+                    name = filename[:-5]  # Remove .json extension
+                    path = os.path.join(custom_dir, filename)
+                    custom_systems.append((name, path))
+
+        return {
+            'default': sorted(default_systems),
+            'custom': sorted(custom_systems)
+        }
