@@ -237,17 +237,15 @@ F = G * m1 * m2 / r²
 For each body, the total acceleration is computed by summing gravitational forces from all other bodies:
 
 ```python
-def _compute_total_acceleration(self, body_index):
+def _compute_total_acceleration(self, body):
     """Compute total gravitational acceleration on a body from all other bodies."""
-    total_accel = np.array([0.0, 0.0])
-    body = self.bodies[body_index]
+    total_accel = np.zeros(2, dtype=float)
     
-    for i, other_body in enumerate(self.bodies):
-        if i != body_index:
-            accel = compute_acceleration(body, other_body, self.G)
-            total_accel += accel
+    for other in self.bodies:
+        if other is not body:  # Skip self
+            total_acc += compute_acceleration(body, other, self.G)
     
-    return total_accel
+    return total_acc
 ```
 
 ### Velocity Verlet Integration
