@@ -47,8 +47,11 @@ if __name__ == "__main__":
     pygame.display.set_caption("Orbit Sandbox")
     clock = pygame.time.Clock()
 
-    # Create main menu view
-    current_view = MainMenuView((window_width, window_height))
+    # Create views dictionary
+    views = {
+        "main_menu": MainMenuView((window_width, window_height))
+    }
+
     current_view_name = "main_menu"
 
     running = True
@@ -60,19 +63,23 @@ if __name__ == "__main__":
                 running = False
 
             # Pass event to current view
-            current_view.process_event(event)
+            views[current_view_name].process_event(event)
 
         # Update and draw current view
-        current_view.update(time_delta)
-        current_view.draw(screen)
+        views[current_view_name].update(time_delta)
+        views[current_view_name].draw(screen)
 
         # Check if view wants to switch
-        next_view_name = current_view.get_next_view()
+        next_view_name = views[current_view_name].get_next_view()
         if next_view_name == "quit":
             running = False
         elif next_view_name:
-            print(f"Switching to view: {next_view_name}")
-            #TODO create and switch to other views
+            if next_view_name not in views:
+                print(f"View '{next_view_name}' not yet implemented - staying in current view.")
+                # Stay on current view for now
+            else:
+                current_view_name = next_view_name
+                print(f"Switched to: {current_view_name}") #! Remove debug print in production
 
         pygame.display.flip()
 
