@@ -10,9 +10,8 @@ Options:
 
 import argparse
 from ui.visualize import run_simulation
-from ui.menu import show_main_menu, show_system_menu
+from ui.views import MainMenuView
 import pygame
-from ui.game_state import GameState
 
 RESOLUTION_MAP = {
     '720p': (1280, 720),
@@ -46,35 +45,35 @@ if __name__ == "__main__":
         screen = pygame.display.set_mode((window_width, window_height))
 
     pygame.display.set_caption("Orbit Sandbox")
+    clock = pygame.time.Clock()
 
-    # Set initial application state
-    current_state = GameState.MAIN_MENU
+    # Create main menu view
+    current_view = MainMenuView((window_width, window_height))
+    current_view_name = "main_menu"
 
-    while current_state != GameState.QUIT:
-        if current_state == GameState.MAIN_MENU:
-            print("Entering Main Menu...") #! Remove for prod
-            # Call the menu and get back which state to go to next
-            next_state = show_main_menu(screen)
-            current_state = next_state
+    running = True
+    while running:
+        time_delta = clock.tick(60) / 1000.0  # Limit to 60 FPS
 
-        elif current_state == GameState.NEW_SYSTEM:
-            print("Creating New System and Starting Simulation...") #! Remove for prod
-            # Show new system creation menu and get system data
-            next_state = GameState.MAIN_MENU  # Placeholder for actual new system creation
-            current_state = next_state
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
-        elif current_state == GameState.LOAD_SYSTEM:
-            print("Loading System and Starting Simulation...") #! Remove for prod
-            # Show systen menu and get chosen system
-            next_state, system_path = show_system_menu(screen)
-            selected_system = system_path
-            current_state = next_state
+            # Pass event to current view
+            current_view.process_event(event)
 
-        elif current_state == GameState.SIMULATION:
-            print("Starting Simulation...") #! Remove for prod
-            # Run the simulation with the selected system
-            next_state = run_simulation(screen, selected_system)
-            current_state = next_state
+        # Update and draw current view
+        current_view.update(time_delta)
+        current_view.draw(screen)
+
+        # Check if view wants to switch
+        next_view_name = current_view.get_next_view()
+        if next_view_name == "quit":
+            running = False
+        elif next_view_name:
+            print(f"Switching to view: {next_view_name}")
+            #TODO create and switch to other views
+
+        pygame.display.flip()
 
     pygame.quit()
-    print("Exiting application...") #! Remove for prod
