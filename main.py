@@ -10,7 +10,7 @@ Options:
 
 import argparse
 from ui.visualize import run_simulation
-from ui.views import MainMenuView
+from ui.views import MainMenuView, LoadSystemView
 import pygame
 
 RESOLUTION_MAP = {
@@ -49,7 +49,8 @@ if __name__ == "__main__":
 
     # Create views dictionary
     views = {
-        "main_menu": MainMenuView((window_width, window_height))
+        "main_menu": MainMenuView((window_width, window_height)),
+        "load_system": LoadSystemView((window_width, window_height))
     }
 
     current_view_name = "main_menu"
