@@ -387,7 +387,7 @@ class SimulationRunner:
             is_hovering = self.close_button_rect.collidepoint(mouse_pos)
             
             # X button background (brighter red when hovering)
-            close_bg_color = (120, 60, 60) if is_hovering else (80, 40, 40)
+            close_bg_color = (200, 70, 70) if is_hovering else (80, 40, 40)
             pygame.draw.rect(screen, close_bg_color, 
                         (close_button_x, close_button_y, close_button_size, close_button_size))
             
