@@ -9,8 +9,7 @@ Options:
 """
 
 import argparse
-from ui.visualize import run_simulation
-from ui.views import MainMenuView, LoadSystemView
+from ui.views import MainMenuView, LoadSystemView, SimulationView
 import pygame
 
 RESOLUTION_MAP = {
@@ -54,6 +53,7 @@ if __name__ == "__main__":
     }
 
     current_view_name = "main_menu"
+    selected_system_path = None
 
     running = True
     while running:
@@ -72,11 +72,22 @@ if __name__ == "__main__":
 
         # Check if view wants to switch
         next_view_name = views[current_view_name].get_next_view()
+        
+        # Handle system selection from LoadSystemView
+        if current_view_name == "load_system" and next_view_name == "simulation":
+            selected_system_path = views["load_system"].selected_system
+            if selected_system_path:
+                # Create simulation view with selected system
+                views["simulation"] = SimulationView(
+                    (window_width, window_height),
+                    selected_system_path
+                )
+
         if next_view_name == "quit":
             running = False
         elif next_view_name:
             if next_view_name not in views:
-                print(f"View '{next_view_name}' not yet implemented - staying in current view.")
+                print(f"View '{next_view_name}' not yet implemented - staying in current view.")  #! Refactor for production
                 # Stay on current view for now
             else:
                 current_view_name = next_view_name
