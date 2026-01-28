@@ -91,7 +91,6 @@ if __name__ == "__main__":
                 # Stay on current view for now
             else:
                 current_view_name = next_view_name
-                print(f"Switched to: {current_view_name}") #! Remove debug print in production
 
         pygame.display.flip()
 
