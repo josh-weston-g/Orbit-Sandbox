@@ -77,6 +77,10 @@ class SimulationRunner:
         self.dragging = False
         self.last_mouse_pos = (0, 0)
 
+        # Body selection
+        self.selected_body_index = None # Which body is selected (None = no selection)
+        self.close_button_rect = None  # Is set when drawing info panel
+
         # Toggle states
         self.paused = False
         self.rewinding = False
@@ -131,10 +135,37 @@ class SimulationRunner:
             if event.key == pygame.K_LEFT:
                 self.rewinding = False
 
-        # Mouse drag for panning
+        # Mouse click - check for body selection and then mouse drag
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            self.dragging = True
-            self.last_mouse_pos = event.pos
+            mouse_x, mouse_y = event.pos
+            center_x, center_y = self.window_width // 2, self.window_height // 2
+            clicked_body = False
+
+            # Check if we clicked the close button
+            if self.selected_body_index is not None and hasattr(self, 'close_button_rect'):
+                if self.close_button_rect.collidepoint(mouse_x, mouse_y):
+                    self.selected_body_index = None
+                    clicked_body = True # Prevent drag from starting
+            
+            # Check if we clicked on any body (only if didn't click the close button)
+            if not clicked_body:
+                for i, body in enumerate(self.sim.bodies):
+                    body_screen_x = center_x + ((body.pos[0] - self.camera_x) * self.scale)
+                    body_screen_y = center_y - ((body.pos[1] - self.camera_y) * self.scale)
+
+                    # Calculate distance from click to body center
+                    distance = ((mouse_x - body_screen_x) ** 2 + (mouse_y - body_screen_y) ** 2) ** 0.5
+
+                    if distance <= 8: #! Assuming body radius is 8 pixels - needs to be changed when variable body sizes are added back
+                        self.selected_body_index = i
+                        clicked_body = True
+                        break
+
+            # Only start draggin if we didn't click on a body
+            if not clicked_body:
+                self.dragging = True
+                self.last_mouse_pos = event.pos
+
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             self.dragging = False
         if event.type == pygame.MOUSEMOTION and self.dragging:
@@ -323,6 +354,50 @@ class SimulationRunner:
         pygame.draw.line(screen, scale_bar_color, (scale_bar_x + scale_bar_length, scale_bar_y - 5), (scale_bar_x + scale_bar_length, scale_bar_y + 5), 2)
         scale_label = self.secondary_hud_font.render("0.5 AU", True, scale_bar_color)
         screen.blit(scale_label, (scale_bar_x, scale_bar_y - 30))
+
+        # === BODY INFO PANEL (Bottom-Right) ===
+        if self.selected_body_index is not None:
+            body = self.sim.bodies[self.selected_body_index]
+            
+            # Get body name (or fallback if not present)
+            body_name = getattr(body, 'name', f"Body {self.selected_body_index + 1}")
+            
+            # Panel dimensions
+            panel_width = 250
+            panel_height = 80
+            panel_x = self.window_width - panel_width - 20
+            panel_y = self.window_height - panel_height - 20
+            
+            # Create semi-transparent background
+            info_panel = pygame.Surface((panel_width, panel_height))
+            info_panel.set_alpha(200)
+            info_panel.fill((40, 40, 40))
+            screen.blit(info_panel, (panel_x, panel_y))
+            
+            # Draw close button (X in top-right of panel)
+            close_button_x = panel_x + panel_width - 25
+            close_button_y = panel_y + 5
+            close_button_size = 20
+
+            # Store close button rect for click detection
+            self.close_button_rect = pygame.Rect(close_button_x, close_button_y, close_button_size, close_button_size)
+
+            # Check if mouse is hovering over close button
+            mouse_pos = pygame.mouse.get_pos()
+            is_hovering = self.close_button_rect.collidepoint(mouse_pos)
+            
+            # X button background (brighter red when hovering)
+            close_bg_color = (120, 60, 60) if is_hovering else (80, 40, 40)
+            pygame.draw.rect(screen, close_bg_color, 
+                        (close_button_x, close_button_y, close_button_size, close_button_size))
+            
+            # X text
+            x_text = self.secondary_hud_font.render("×", True, (255, 255, 255))
+            screen.blit(x_text, (close_button_x + 4, close_button_y - 2))
+            
+            # Draw body name
+            name_text = self.primary_hud_font.render(body_name, True, (255, 255, 255))
+            screen.blit(name_text, (panel_x + 10, panel_y + 10))
 
         # === PAUSE/REWIND INDICATOR (Center-Top) ===
         if self.rewinding:
