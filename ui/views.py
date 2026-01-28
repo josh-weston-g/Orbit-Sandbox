@@ -5,6 +5,7 @@ Each view represents a screen/state in the application.
 import pygame
 import pygame_gui
 from orbit.loader import SystemLoader
+from ui.visualize import SimulationRunner
 
 class MainMenuView:
     """Main menu screen with New System, Load System, and Quit options."""
@@ -250,6 +251,37 @@ class LoadSystemView:
 
     def get_next_view(self):
         """Return next view name if user requested a switch, then reset."""
+        next_view = self._next_view
+        self._next_view = None
+        return next_view
+
+class SimulationView:
+    """Thin wrapper around SimulationRunner to fit in the view system."""
+
+    def __init__(self, screen_size, system_path):
+        """Initialize simulation view with the selected system"""
+        self.runner = SimulationRunner(screen_size, system_path)
+        self._next_view = None
+
+    def process_event(self, event):
+        """Pass event to simulation runner."""
+        self.runner.handle_event(event)
+
+    def update(self, time_delta):
+        """Update simulation physics"""
+        self.runner.update_physics(time_delta)
+
+        # Check if runner wants to exit
+        requested = self.runner.get_requested_next_view()
+        if requested:
+            self._next_view = requested
+
+    def draw(self, screen):
+        """Draw simulation."""
+        self.runner.draw(screen)
+
+    def get_next_view(self):
+        """Return next view if simulation wants to exit."""
         next_view = self._next_view
         self._next_view = None
         return next_view
