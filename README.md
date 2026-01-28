@@ -41,43 +41,11 @@ The interactive Pygame visualization provides real-time rendering with zoom, pan
 
 ## Current Features
 
-- 🪐 **Seven pre-built systems:**
-  - Binary Stars - Two equal-mass stars orbiting their barycenter
-  - Sun-Earth Orbit - Earth in perfect circular orbit around the Sun
-  - Elliptical Orbit - Earth in elliptical orbit (70% circular velocity)
-  - Escape Trajectory - Earth escaping the Sun's gravity
-  - Three-Body Triangle - Three equal masses in rotating equilateral configuration
-  - Inner Solar System - Sun with Mercury, Venus, Earth, and Mars
-  - Complete Solar System - All 8 planets from Mercury to Neptune
-- ⚙️ **N-body physics simulation:**
-  - Full N-body gravity (all bodies attract each other)
-  - Newtonian gravity (inverse square law)
-  - Velocity Verlet integration (2nd order accuracy)
-  - Excellent energy conservation
-  - Conserves angular momentum
-  - Rewind capability with full state history
-- 🎮 **Interactive visualization:**
-  - Real-time Pygame rendering
-  - State-based menu system using pygame_menu
-  - Main menu with system selection
-  - Dynamic window resolution (auto-detection or fixed sizes)
-  - Mouse wheel zoom
-  - Camera panning with WASD keys or click-and-drag
-  - Toggleable grid overlay
-  - Orbital trail rendering
-  - Pause/resume with spacebar
-  - Rewind simulation
-  - Reset simulation with R key
-  - ESC to return to menu
-  - Real-time HUD with time, speed, scale, and energy display
-- 📁 **JSON-based system definitions:**
-  - Easy to create custom systems without coding
-  - Human-readable format with mass, position, velocity for each body
-  - Optional body names and types (star, planet, body)
-  - Drop JSON files in `data/systems/` and they appear in the menu automatically
-- 🎯 **Modular architecture:**
-  - Clean separation between physics, simulation, data, and rendering
-  - Easy to extend with new systems or integrators
+- 🪐 **Seven pre-built systems:** Binary stars, Sun-Earth orbit, elliptical orbit, escape trajectory, three-body triangle, inner solar system, and complete solar system (Mercury to Neptune)
+- ⚙️ **N-body physics:** Full gravitational interactions between all bodies, Velocity Verlet integration (2nd order), excellent energy/momentum conservation, rewind capability
+- 🎮 **Interactive visualization:** Real-time rendering with pygame_gui menus, dynamic resolution, zoom/pan controls, toggleable grid and trails, pause/rewind, real-time HUD
+- 📁 **JSON-based systems:** Create custom systems without coding - drop JSON files in `data/systems/` and they appear automatically
+- 🎯 **Modular architecture:** Clean separation between physics, simulation, UI views, and rendering
 
 ## Project Structure
 
@@ -85,19 +53,20 @@ The codebase is organized with clear separation of concerns:
 
 ```
 Orbit-Sandbox/
-├── main.py                # Entry point - state machine, resolution handling
+├── main.py                # Entry point - main loop, view management, resolution handling
 ├── requirements.txt       # Python dependencies
 ├── assets/
 │   └── fonts/             # JetBrains Mono Nerd Font (Regular and Bold)
 ├── data/
-│   └── systems/           # JSON system definitions
-│       ├── binary_stars.json
-│       ├── circular_orbit.json
-│       ├── elliptical_orbit.json
-│       ├── escape_trajectory.json
-│       ├── three_body_triangle.json
-│       ├── solar_system_inner.json
-│       └── solar_system.json
+│   ├── default_systems/   # JSON default system definitions
+│   │   ├── binary_stars.json
+│   │   ├── circular_orbit.json
+│   │   ├── elliptical_orbit.json
+│   │   ├── escape_trajectory.json
+│   │   ├── three_body_triangle.json
+│   │   ├── solar_system_inner.json
+│   │   └── solar_system.json
+│   └── custom_systems/    # User-created custom systems
 ├── orbit/
 │   ├── __init__.py
 │   ├── body.py            # Body class - position, velocity, acceleration, mass, name
@@ -107,18 +76,16 @@ Orbit-Sandbox/
 │   └── units.py           # Unit conversions and constants (AU, years, G)
 └── ui/
     ├── __init__.py
-    ├── game_state.py      # GameState enum for application state management
-    ├── menu.py            # Menu system using pygame_menu (main menu, system selection)
-    └── visualize.py       # Pygame visualization and simulation rendering
+    ├── views.py           # UI views using pygame_gui (MainMenuView, LoadSystemView, SimulationView)
+    └── visualize.py       # SimulationRunner class - physics updates, rendering, controls
 ```
 
 Core classes:
 - **Body:** Represents a physical object with position, velocity, acceleration, mass, name, and type
 - **Simulation:** Orchestrates the N-body physics loop, Velocity Verlet integration, state history, and time manipulation
 - **SystemLoader:** Loads orbital systems from JSON files and discovers available systems
-- **GameState:** Enum defining application states (MAIN_MENU, LOAD_SYSTEM, SIMULATION, QUIT)
-- **Menu System:** pygame_menu-based menus for navigation and system selection
-- **Visualization:** Handles Pygame rendering and simulation controls
+- **Views:** Frame-based UI screens using pygame_gui (MainMenuView, LoadSystemView, SimulationView)
+- **SimulationRunner:** Handles simulation logic, physics updates, rendering, and user controls
 
 ## Installation
 
@@ -145,7 +112,7 @@ Core classes:
 - **Python 3.12 or 3.13** (Python 3.14 not yet supported due to pygame compatibility issues)
 - NumPy
 - Pygame
-- pygame-menu
+- pygame-gui
 
 ## Usage
 
