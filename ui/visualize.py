@@ -4,7 +4,6 @@ import random
 from math import ceil
 from orbit.simulation import Simulation
 from orbit.loader import SystemLoader
-from .game_state import GameState
 
 # Body colors for visualization
 BODY_COLORS = [
@@ -19,211 +18,208 @@ BODY_COLORS = [
     (65, 105, 225),  # Royal blue (Neptune)
 ]
 
-# Main visualization function
-def run_simulation(screen, system_path):
+class SimulationRunner:
     """
-    Run the orbital simulation
+    Handles simulation logic, physics updates, and rendering.
+    Frame-based (no internal loop) - called by SimulationView.
+    """
     
-    param: screen: Pygame display surface
-    param: system_path: Path to the JSON file defining the orbital system
+    def __init__(self, screen_size, system_path):
+        """Initialize the simulation with the given system"""
+        # Load system
+        self.bodies, self.G, self.metadata = SystemLoader.load_from_file(system_path)
+        self.system_path = system_path # Store for potential reloads
 
-    return: GameState: Next state to transition to
-    """
-    # Load system
-    bodies, G, metadata = SystemLoader.load_from_file(system_path)
+        # Screen dimensions
+        self.window_width, self.window_height = screen_size
 
-    # Get screen dimension 
-    window_width = screen.get_width()
-    window_height = screen.get_height()
+        # Load fonts
+        try:
+            self.icon_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 48)
+            self.primary_hud_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 24)
+            self.secondary_hud_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 20)
+        except FileNotFoundError:
+            print("⚠ JetBrains Mono Nerd Font not found, using system font")
+            self.icon_font = pygame.font.Font(None, 48)
+            self.primary_hud_font = pygame.font.Font(None, 24)
+            self.secondary_hud_font = pygame.font.Font(None, 20)
 
-    # Load fonts
-    try:
-        icon_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 48)
-        primary_hud_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 24)
-        secondary_hud_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 20)
-    except FileNotFoundError:
-        print("⚠ JetBrains Mono Nerd Font not found, using system font")
-        icon_font = pygame.font.Font(None, 48)
-        primary_hud_font = pygame.font.Font(None, 24)
-        secondary_hud_font = pygame.font.Font(None, 20)
+        # Nerd font icon codes
+        self.PAUSE_ICON = "\uf04c"
+        self.REWIND_ICON = "\uf04a"
 
-    # Nerd Font icon codes
-    PAUSE_ICON = "\uf04c"
-    REWIND_ICON = "\uf04a"
+        # Timing and scale
+        self.clock = pygame.time.Clock()
+        self.FPS = 60
+        self.elapsed_sim_time = 0.0
+        self.elapsed_real_time = 0.0
+        self.scale = 200  # pixels per AU
 
-    # Create clock and timing and set initial scale
-    clock = pygame.time.Clock()
-    FPS = 60
-    elapsed_sim_time = 0.0
-    elapsed_real_time = 0.0
-    scale = 200  # pixels per AU
+        # Create simulation
+        self.sim = Simulation(self.bodies, G=self.G, dt=0.001)
 
-    # Create simulation
-    sim = Simulation(bodies, G=G, dt=0.001)
+        # Physics timing
+        self.physics_dt = self.sim.dt
+        self.physics_accumulator = 0.0
+        self.speed_multiplier = 0.1
 
-    # Physics timing
-    physics_dt = sim.dt
-    physics_accumulator = 0.0
-    speed_multiplier = 0.1
+        # Speed change settings
+        self.speed_change_cooldown = 0.0
+        self.SPEED_CHANGE_DELAY = 0.1
 
-    # Speed change settings
-    speed_change_cooldown = 0.0
-    SPEED_CHANGE_DELAY = 0.1
+        # Trail settings - one trail per body
+        self.max_trail_length = 200
+        self.trails = [[] for _ in self.sim.bodies]
 
-    # Trail settings - one trail per body
-    max_trail_length = 200
-    trails = [[] for _ in sim.bodies]  # List of trails
+        # Camera settings
+        self.camera_x, self.camera_y = 0.0, 0.0
+        self.camera_speed = 1.0
+        self.dragging = False
+        self.last_mouse_pos = (0, 0)
 
-    # Camera settings
-    camera_x, camera_y = 0.0, 0.0
-    camera_speed = 1.0
-    dragging = False
-    last_mouse_pos = (0, 0)
+        # Toggle states
+        self.paused = False
+        self.rewinding = False
+        self.show_grid = False
+        self.show_trail = True
+        self.show_energy = False
 
-    # Toggle states
-    paused = False
-    rewinding  = False
-    show_grid = False
-    show_trail = True
-    show_energy = False
+        # Create starfield
+        self.starfield = []
+        for _ in range(160):
+            x = random.randint(0, self.window_width)
+            y = random.randint(0, self.window_height)
+            brightness = random.randint(100, 255)
+            self.starfield.append((x, y, brightness))
 
-    # Create static starfield background
-    starfield = []
-    for _ in range(160):
-        x = random.randint(0, window_width)
-        y = random.randint(0, window_height)
-        brightness = random.randint(100, 255)
-        starfield.append((x, y, brightness))
+        # Track if user wants to exit
+        self._next_view = None
 
-    print("Controls: \033[96mW,A,S,D\033[0m pan, \033[96mSPACE\033[0m pause, \033[96mLEFT\033[0m rewind, \033[96mUP/DOWN\033[0m speed, \033[96m+/-\033[0m zoom, \033[96mR\033[0m reset, \033[96mG\033[0m grid, \033[96mT\033[0m trail, \033[96mE\033[0m energy, \033[96mESC\033[0m menu")  
+        print("Controls: \033[96mW,A,S,D\033[0m pan, \033[96mSPACE\033[0m pause, \033[96mLEFT\033[0m rewind, \033[96mUP/DOWN\033[0m speed, \033[96m+/-\033[0m zoom, \033[96mR\033[0m reset, \033[96mG\033[0m grid, \033[96mT\033[0m trail, \033[96mE\033[0m energy, \033[96mESC\033[0m menu")
 
-    # Initialize frame_time
-    frame_time = 0.0
+    def handle_event(self, event):
+        """Handle a sinlge pygame event."""
+        if event.type == pygame.QUIT:
+            self._next_view = 'quit'
 
-    # Main simulation loop
-    running = True
-    while running:
-        # Event handling
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return GameState.QUIT  # User closed window
-            
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    return GameState.MAIN_MENU  # Return to main menu
-                elif event.key == pygame.K_SPACE:
-                    paused = not paused
-                elif event.key == pygame.K_r:
-                    # Reset simulation
-                    bodies, G, metadata = SystemLoader.load_from_file(system_path)
-                    sim = Simulation(bodies, G=G, dt=0.001)
-                    trails = [[] for _ in sim.bodies]
-                    elapsed_sim_time = 0.0
-                    elapsed_real_time = 0.0
-                    camera_x, camera_y = 0.0, 0.0
-                elif event.key == pygame.K_EQUALS or event.key == pygame.K_KP_PLUS:
-                    scale = min(2000, scale + 20)
-                elif event.key == pygame.K_MINUS or event.key == pygame.K_KP_MINUS:
-                    scale = max(40, scale - 20)
-                elif event.key == pygame.K_g:
-                    show_grid = not show_grid
-                elif event.key == pygame.K_t:
-                    show_trail = not show_trail
-                elif event.key == pygame.K_e:
-                    show_energy = not show_energy
-                elif event.key == pygame.K_LEFT:
-                    paused = True # Ensure sim is paused when starting rewind
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT:
-                    rewinding = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self._next_view = 'main_menu'  # Return to main menu
+            elif event.key == pygame.K_SPACE:
+                self.paused = not self.paused
+            elif event.key == pygame.K_r:
+                # Reset simulation
+                self.bodies, self.G, self.metadata = SystemLoader.load_from_file(self.system_path)
+                self.sim = Simulation(self.bodies, G=self.G, dt=0.001)
+                self.trails = [[] for _ in self.sim.bodies]
+                self.elapsed_sim_time = 0.0
+                self.elapsed_real_time = 0.0
+                self.camera_x, self.camera_y = 0.0, 0.0
+            elif event.key == pygame.K_EQUALS or event.key == pygame.K_KP_PLUS:
+                self.scale = min(2000, self.scale + 20)
+            elif event.key == pygame.K_MINUS or event.key == pygame.K_KP_MINUS:
+                self.scale = max(40, self.scale - 20)
+            elif event.key == pygame.K_g:
+                self.show_grid = not self.show_grid
+            elif event.key == pygame.K_t:
+                self.show_trail = not self.show_trail
+            elif event.key == pygame.K_e:
+                self.show_energy = not self.show_energy
+            elif event.key == pygame.K_LEFT:
+                self.paused = True # Ensure sim is paused when starting rewind
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_LEFT:
+                self.rewinding = False
 
-            # Mouse drag for panning
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                dragging = True
-                last_mouse_pos = event.pos
-            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                dragging = False
-            if event.type == pygame.MOUSEMOTION and dragging:
-                dx = event.pos[0] - last_mouse_pos[0]
-                dy = event.pos[1] - last_mouse_pos[1]
-                camera_x -= dx / scale
-                camera_y += dy / scale
-                last_mouse_pos = event.pos
+        # Mouse drag for panning
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            self.dragging = True
+            self.last_mouse_pos = event.pos
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            self.dragging = False
+        if event.type == pygame.MOUSEMOTION and self.dragging:
+            dx = event.pos[0] - self.last_mouse_pos[0]
+            dy = event.pos[1] - self.last_mouse_pos[1]
+            self.camera_x -= dx / self.scale
+            self.camera_y += dy / self.scale
+            self.last_mouse_pos = event.pos
 
-            # Mouse wheel zoom
-            if event.type == pygame.MOUSEWHEEL:
-                if event.y > 0:
-                    scale = min(2000, scale + 20)
-                elif event.y < 0:
-                    scale = max(40, scale - 20)
+        # Mouse wheel zoom
+        if event.type == pygame.MOUSEWHEEL:
+            if event.y > 0:
+                self.scale = min(2000, self.scale + 20)
+            elif event.y < 0:
+                self.scale = max(40, self.scale - 20)
 
-        # Continuous key input
+    def update_physics(self, time_delta):
+        """Update the physics simulation for one frame"""
+        # Continuous key input for camera panning
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
-            camera_y += camera_speed * frame_time
+            self.camera_y += self.camera_speed * time_delta
         if keys[pygame.K_s]:
-            camera_y -= camera_speed * frame_time
+            self.camera_y -= self.camera_speed * time_delta
         if keys[pygame.K_a]:
-            camera_x -= camera_speed * frame_time
+            self.camera_x -= self.camera_speed * time_delta
         if keys[pygame.K_d]:
-            camera_x += camera_speed * frame_time
+            self.camera_x += self.camera_speed * time_delta
 
-        # Rewind controls (while paused)
+        # Rewind controls (continuous while left is held)
         if keys[pygame.K_LEFT]:
-            paused = True
-            rewinding = True
-            if sim.rewind_one_step():
-                elapsed_sim_time = max(0.0, sim.time)
+            self.paused = True
+            self.rewinding = True
+            if self.sim.rewind_one_step():
+                self.elapsed_sim_time = max(0.0, self.sim.time)
                 # Pop trails for all bodies
-                for trail in trails:
+                for trail in self.trails:
                     if len(trail) > 0:
                         trail.pop()
 
-        frame_time = clock.tick(FPS) / 1000.0
-
-        # Speed adjustment
-        speed_change_cooldown -= frame_time
-        if speed_change_cooldown <= 0.0:
+        # Speed adjustment with cooldown
+        self.speed_change_cooldown -= time_delta
+        if self.speed_change_cooldown <= 0.0:
             if keys[pygame.K_UP]:
-                speed_multiplier += 0.01
-                speed_change_cooldown = SPEED_CHANGE_DELAY
+                self.speed_multiplier += 0.01
+                self.speed_change_cooldown = self.SPEED_CHANGE_DELAY
             elif keys[pygame.K_DOWN]:
-                speed_multiplier = max(0.01, speed_multiplier - 0.01)
-                speed_change_cooldown = SPEED_CHANGE_DELAY
+                self.speed_multiplier = max(0.01, self.speed_multiplier - 0.01)
+                self.speed_change_cooldown = self.SPEED_CHANGE_DELAY
 
         # Physics update
-        physics_accumulator += frame_time * speed_multiplier
-        if not paused:
-            elapsed_sim_time += frame_time * speed_multiplier
-            elapsed_real_time += frame_time
-            while physics_accumulator >= physics_dt:
-                sim.step()
-                physics_accumulator -= physics_dt
+        self.physics_accumulator += time_delta * self.speed_multiplier
+        if not self.paused:
+            self.elapsed_sim_time += time_delta * self.speed_multiplier
+            self.elapsed_real_time += time_delta
+            while self.physics_accumulator >= self.physics_dt:
+                self.sim.step()
+                self.physics_accumulator -= self.physics_dt
 
                 # Update trails every physics step
-                for i, body in enumerate(sim.bodies):
-                    trails[i].append((body.pos[0], body.pos[1]))
-                    while len(trails[i]) > max_trail_length:
-                        trails[i].pop(0)
+                for i, body in enumerate(self.sim.bodies):
+                    self.trails[i].append((body.pos[0], body.pos[1]))
+                    while len(self.trails[i]) > self.max_trail_length:
+                        self.trails[i].pop(0)
         else:
-            physics_accumulator = 0.0
+            self.physics_accumulator = 0.0
 
+    def draw(self, screen):
+        """Draw the simulation for one frame."""
         # Screen center
-        center_x, center_y = window_width // 2, window_height // 2
+        center_x, center_y = self.window_width // 2, self.window_height // 2
 
         # Calculate system energy if enabled
-        if show_energy:
+        if self.show_energy:
             kinetic_energy = 0.0
             potential_energy = 0.0
             
-            for body in sim.bodies:
+            for body in self.sim.bodies:
                 kinetic_energy += 0.5 * body.mass * np.linalg.norm(body.vel)**2
             
-            for i, body1 in enumerate(sim.bodies):
-                for j, body2 in enumerate(sim.bodies):
+            for i, body1 in enumerate(self.bodies):
+                for j, body2 in enumerate(self.bodies):
                     if i < j:
                         r = np.linalg.norm(body1.pos - body2.pos)
-                        potential_energy -= sim.G * body1.mass * body2.mass / r
+                        potential_energy -= self.sim.G * body1.mass * body2.mass / r
             
             total_energy = kinetic_energy + potential_energy
 
@@ -231,43 +227,43 @@ def run_simulation(screen, system_path):
         screen.fill((0, 0, 0))
 
         # Draw starfield
-        for x, y, brightness in starfield:
+        for x, y, brightness in self.starfield:
             pygame.draw.circle(screen, (brightness, brightness, brightness), (x, y), 1)
 
         # Draw grid if enabled
-        if show_grid:
+        if self.show_grid:
             grid_color = (40, 40, 40)
             grid_spacing = 0.5
-            visible_width = window_width / scale
-            visible_height = window_height / scale
+            visible_width = self.window_width / self.scale
+            visible_height = self.window_height / self.scale
             
-            left_edge = camera_x - (visible_width / 2)
-            right_edge = camera_x + (visible_width / 2)
+            left_edge = self.camera_x - (visible_width / 2)
+            right_edge = self.camera_x + (visible_width / 2)
             x_physics = ceil(left_edge / grid_spacing) * grid_spacing
             while x_physics <= right_edge:
-                screen_x = int(center_x + ((x_physics - camera_x) * scale))
-                pygame.draw.line(screen, grid_color, (screen_x, 0), (screen_x, window_height), 1)
+                screen_x = int(center_x + ((x_physics - self.camera_x) * self.scale))
+                pygame.draw.line(screen, grid_color, (screen_x, 0), (screen_x, self.window_height), 1)
                 x_physics += grid_spacing
             
-            bottom_edge = camera_y - (visible_height / 2)
-            top_edge = camera_y + (visible_height / 2)
+            bottom_edge = self.camera_y - (visible_height / 2)
+            top_edge = self.camera_y + (visible_height / 2)
             y_physics = ceil(bottom_edge / grid_spacing) * grid_spacing
             while y_physics <= top_edge:
-                screen_y = int(center_y - ((y_physics - camera_y) * scale))
-                pygame.draw.line(screen, grid_color, (0, screen_y), (window_width, screen_y), 1)
+                screen_y = int(center_y - ((y_physics - self.camera_y) * self.scale))
+                pygame.draw.line(screen, grid_color, (0, screen_y), (self.window_width, screen_y), 1)
                 y_physics += grid_spacing
 
         # Draw trails for all bodies
-        if show_trail:
-            for i, trail in enumerate(trails):
+        if self.show_trail:
+            for i, trail in enumerate(self.trails):
                 if len(trail) > 1:
                     color = BODY_COLORS[i % len(BODY_COLORS)]
-                    trail_surface = pygame.Surface((window_width, window_height), pygame.SRCALPHA)
+                    trail_surface = pygame.Surface((self.window_width, self.window_height), pygame.SRCALPHA)
                     
                     trail_screen = []
                     for px, py in trail:
-                        sx = int(center_x + ((px - camera_x) * scale))
-                        sy = int(center_y - ((py - camera_y) * scale))
+                        sx = int(center_x + ((px - self.camera_x) * self.scale))
+                        sy = int(center_y - ((py - self.camera_y) * self.scale))
                         trail_screen.append((sx, sy))
                     
                     for j in range(len(trail_screen) - 1):
@@ -278,12 +274,12 @@ def run_simulation(screen, system_path):
                     screen.blit(trail_surface, (0, 0))
 
         # Draw all bodies
-        for i, body in enumerate(sim.bodies):
+        for i, body in enumerate(self.sim.bodies):
             # Convert position to screen coordinates
-            body_screen_x = center_x + ((body.pos[0] - camera_x) * scale)
-            body_screen_y = center_y - ((body.pos[1] - camera_y) * scale)
+            body_screen_x = center_x + ((body.pos[0] - self.camera_x) * self.scale)
+            body_screen_y = center_y - ((body.pos[1] - self.camera_y) * self.scale)
             
-            # Fixed body radius (can be made mass-dependent later)
+            # Fixed body radius
             body_radius = 8
             
             # Get color from palette
@@ -292,70 +288,73 @@ def run_simulation(screen, system_path):
             pygame.draw.circle(screen, color, (int(body_screen_x), int(body_screen_y)), body_radius)
 
         # === HUD ===
-        screen_width = screen.get_width()
-        screen_height = screen.get_height()
-
         # TOP-RIGHT: Technical info
-        fps_text = primary_hud_font.render(f"FPS: {clock.get_fps():.0f}", True, (255, 255, 255))
-        zoom_text = primary_hud_font.render(f"Zoom: {(scale / 200):.2f}x", True, (255, 255, 255))
-        bodies_text = primary_hud_font.render(f"Bodies: {len(sim.bodies)}", True, (255, 255, 255))
-        screen.blit(fps_text, (screen_width - fps_text.get_width() - 10, 10))
-        screen.blit(zoom_text, (screen_width - zoom_text.get_width() - 10, 40))
-        screen.blit(bodies_text, (screen_width - bodies_text.get_width() - 10, 70))
+        fps_text = self.primary_hud_font.render(f"FPS: {self.clock.get_fps():.0f}", True, (255, 255, 255))
+        zoom_text = self.primary_hud_font.render(f"Zoom: {(self.scale / 200):.2f}x", True, (255, 255, 255))
+        bodies_text = self.primary_hud_font.render(f"Bodies: {len(self.sim.bodies)}", True, (255, 255, 255))
+        screen.blit(fps_text, (self.window_width - fps_text.get_width() - 10, 10))
+        screen.blit(zoom_text, (self.window_width - zoom_text.get_width() - 10, 40))
+        screen.blit(bodies_text, (self.window_width - bodies_text.get_width() - 10, 70))
 
         # TOP-LEFT: Simulation timing
-        sim_speed_text = primary_hud_font.render(f"Speed: {(speed_multiplier * 10):.1f}x", True, (255, 255, 255))
-        elapsed_sim_time_text = primary_hud_font.render(f"Sim Time: {elapsed_sim_time:.2f} years", True, (255, 255, 255))
-        elapsed_real_time_text = primary_hud_font.render(f"Real Time: {elapsed_real_time:.2f}s", True, (255, 255, 255))
+        sim_speed_text = self.primary_hud_font.render(f"Speed: {(self.speed_multiplier * 10):.1f}x", True, (255, 255, 255))
+        elapsed_sim_time_text = self.primary_hud_font.render(f"Sim Time: {self.elapsed_sim_time:.2f} years", True, (255, 255, 255))
+        elapsed_real_time_text = self.primary_hud_font.render(f"Real Time: {self.elapsed_real_time:.2f}s", True, (255, 255, 255))
         screen.blit(sim_speed_text, (10, 10))
         screen.blit(elapsed_sim_time_text, (10, 40))
         screen.blit(elapsed_real_time_text, (10, 70))
 
         # MIDDLE-LEFT: Energy display if enabled
-        if show_energy:
-            ke_text = primary_hud_font.render(f"KE: {kinetic_energy:.4e}", True, (100, 255, 100))
-            pe_text = primary_hud_font.render(f"PE: {potential_energy:.4e}", True, (255, 100, 100))
-            te_text = primary_hud_font.render(f"Total: {total_energy:.4e}", True, (255, 255, 100))
-            screen.blit(ke_text, (10, screen_height // 2 - 30))
-            screen.blit(pe_text, (10, screen_height // 2))
-            screen.blit(te_text, (10, screen_height // 2 + 30))
+        if self.show_energy:
+            ke_text = self.primary_hud_font.render(f"KE: {kinetic_energy:.4e}", True, (100, 255, 100))
+            pe_text = self.primary_hud_font.render(f"PE: {potential_energy:.4e}", True, (255, 100, 100))
+            te_text = self.primary_hud_font.render(f"Total: {total_energy:.4e}", True, (255, 255, 100))
+            screen.blit(ke_text, (10, self.window_height // 2 - 30))
+            screen.blit(pe_text, (10, self.window_height // 2))
+            screen.blit(te_text, (10, self.window_height // 2 + 30))
 
         # BOTTOM-LEFT: Scale bar
         scale_bar_color = (200, 200, 200)
         scale_bar_x = 20
-        scale_bar_y = screen_height - 40
-        scale_bar_length = int(0.5 * scale)
+        scale_bar_y = self.window_height - 40
+        scale_bar_length = int(0.5 * self.scale)
         pygame.draw.line(screen, scale_bar_color, (scale_bar_x, scale_bar_y), (scale_bar_x + scale_bar_length, scale_bar_y), 2)
         pygame.draw.line(screen, scale_bar_color, (scale_bar_x, scale_bar_y - 5), (scale_bar_x, scale_bar_y + 5), 2)
         pygame.draw.line(screen, scale_bar_color, (scale_bar_x + scale_bar_length, scale_bar_y - 5), (scale_bar_x + scale_bar_length, scale_bar_y + 5), 2)
-        scale_label = secondary_hud_font.render("0.5 AU", True, scale_bar_color)
+        scale_label = self.secondary_hud_font.render("0.5 AU", True, scale_bar_color)
         screen.blit(scale_label, (scale_bar_x, scale_bar_y - 30))
 
         # === PAUSE/REWIND INDICATOR (Center-Top) ===
-        if rewinding:
+        if self.rewinding:
             # Rewind indicator
-            indicator_text = icon_font.render(f"{REWIND_ICON} REWINDING", True, (255, 100, 100))
+            indicator_text = self.icon_font.render(f"{self.REWIND_ICON} REWINDING", True, (255, 100, 100))
             indicator_bg = pygame.Surface((indicator_text.get_width() + 40, indicator_text.get_height() + 20))
             indicator_bg.set_alpha(200)
             indicator_bg.fill((40, 20, 20))
             
-            indicator_x = (screen_width - indicator_bg.get_width()) // 2
+            indicator_x = (self.window_width - indicator_bg.get_width()) // 2
             indicator_y = 20
             
             screen.blit(indicator_bg, (indicator_x, indicator_y))
             screen.blit(indicator_text, (indicator_x + 20, indicator_y + 10))
 
-        elif paused:
+        elif self.paused:
             # Pause indicator
-            indicator_text = icon_font.render(f"{PAUSE_ICON} PAUSED", True, (255, 255, 100))
+            indicator_text = self.icon_font.render(f"{self.PAUSE_ICON} PAUSED", True, (255, 255, 100))
             indicator_bg = pygame.Surface((indicator_text.get_width() + 40, indicator_text.get_height() + 20))
             indicator_bg.set_alpha(200)
             indicator_bg.fill((40, 40, 20))
             
-            indicator_x = (screen_width - indicator_bg.get_width()) // 2
+            indicator_x = (self.window_width - indicator_bg.get_width()) // 2
             indicator_y = 20
             
             screen.blit(indicator_bg, (indicator_x, indicator_y))
             screen.blit(indicator_text, (indicator_x + 20, indicator_y + 10))
 
         pygame.display.flip()
+
+    def get_requested_next_view(self):
+        """Return next view if users wants to exit (i.e., ESC pressed)."""
+        next_view = self._next_view
+        self._next_view = None # Reset after reading
+        return next_view
