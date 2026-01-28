@@ -395,7 +395,7 @@ class SimulationRunner:
             x_text = self.secondary_hud_font.render("×", True, (255, 255, 255))
             screen.blit(x_text, (close_button_x + 4, close_button_y - 2))
             
-            # Draw body name
+            # Draw body name #! add more info later (mass, velocity, etc.)
             name_text = self.primary_hud_font.render(body_name, True, (255, 255, 255))
             screen.blit(name_text, (panel_x + 10, panel_y + 10))
 
