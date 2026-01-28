@@ -289,7 +289,7 @@ class SimulationRunner:
 
         # === HUD ===
         # TOP-RIGHT: Technical info
-        fps_text = self.primary_hud_font.render(f"FPS: {self.clock.get_fps():.0f}", True, (255, 255, 255))
+        fps_text = self.primary_hud_font.render(f"FPS: {self.clock.get_fps():.0f}", True, (255, 255, 255))  #! Not currently working
         zoom_text = self.primary_hud_font.render(f"Zoom: {(self.scale / 200):.2f}x", True, (255, 255, 255))
         bodies_text = self.primary_hud_font.render(f"Bodies: {len(self.sim.bodies)}", True, (255, 255, 255))
         screen.blit(fps_text, (self.window_width - fps_text.get_width() - 10, 10))
