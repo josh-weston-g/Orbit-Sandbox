@@ -4,6 +4,7 @@ import random
 from math import ceil
 from orbit.simulation import Simulation
 from orbit.loader import SystemLoader
+from orbit.units import velocity_to_km_per_s
 
 # Body colors for visualization
 BODY_COLORS = [
@@ -39,12 +40,16 @@ class SimulationRunner:
             self.bold_hud_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Bold.ttf", 24)
             self.primary_hud_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 24)
             self.secondary_hud_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 20)
+            self.primary_panel_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 20)
+            self.secondary_panel_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 16)
         except FileNotFoundError:
             print("⚠ JetBrains Mono Nerd Font not found, using system font")
             self.icon_font = pygame.font.Font(None, 48)
             self.bold_hud_font = pygame.font.Font(None, 24)
             self.primary_hud_font = pygame.font.Font(None, 24)
             self.secondary_hud_font = pygame.font.Font(None, 20)
+            self.primary_panel_font = pygame.font.Font(None, 20)
+            self.secondary_panel_font = pygame.font.Font(None, 16)
 
         # Nerd font icon codes
         self.PAUSE_ICON = "\uf04c"
@@ -369,12 +374,34 @@ class SimulationRunner:
             
             # Get body name (or fallback if not present) and other attributes
             body_name = getattr(body, 'name', f"Body {self.selected_body_index + 1}")
+            body_type = getattr(body, 'type', "body")
             body_mass = body.mass
-            body_vel = body.vel # Numpy array
+            body_vel = body.vel
             body_vel_magnitude = np.linalg.norm(body_vel)
             
-            # Panel dimensions
-            panel_width = 400
+            # Render all text surfaces first to measure them
+            name_text = self.bold_hud_font.render(body_name, True, (255, 255, 255))
+            type_text = self.primary_panel_font.render(f"({body_type})", True, (200, 200, 200))
+            mass_text = self.primary_panel_font.render(f"Mass: {body_mass:.3g} M⊙", True, (255, 255, 255))
+            vel_mag_text = self.primary_panel_font.render(f"Velocity: {body_vel_magnitude:.3g} AU/yr", True, (255, 255, 255))
+            vel_kms_text = self.primary_panel_font.render(f"         ({velocity_to_km_per_s(body_vel_magnitude):.3g} km/s)", True, (200, 200, 200))
+            vel_vec_text = self.secondary_panel_font.render(f"(vx: {body_vel[0]:.3g}, vy: {body_vel[1]:.3g}) AU/yr", True, (200, 200, 200))
+            
+            # Calculate required width
+            name_width = name_text.get_width()
+            type_width = type_text.get_width()
+            combined_name_type_width = name_width + 5 + type_width  # 5 for spacing
+            max_width = max(
+                combined_name_type_width,
+                mass_text.get_width(),
+                vel_mag_text.get_width(),
+                vel_kms_text.get_width(),
+                vel_vec_text.get_width()
+            )
+            
+            # Panel dimensions with dynamic width based on longest line of text
+            min_panel_width = 400
+            panel_width = max(min_panel_width, max_width + 20)  # +20 for padding
             panel_height = 200
             panel_x = self.window_width - panel_width - 20
             panel_y = self.window_height - panel_height - 20
@@ -406,15 +433,20 @@ class SimulationRunner:
             x_text = self.secondary_hud_font.render("×", True, (255, 255, 255))
             screen.blit(x_text, (close_button_x + 4, close_button_y - 2))
             
-            # Draw body name #! Add units, work on s.f.
+            # Draw body info text
             name_text = self.bold_hud_font.render(body_name, True, (255, 255, 255))
-            mass_text = self.primary_hud_font.render(f"Mass: {body_mass:.3g}", True, (255, 255, 255))
-            vel_mag_text = self.primary_hud_font.render(f"Velocity: {body_vel_magnitude:.3g}", True, (255, 255, 255))
-            vel_vec_text = self.secondary_hud_font.render(f"(vx: {body_vel[0]:.3g}, vy: {body_vel[1]:.3g})", True, (200, 200, 200))
+            name_width = name_text.get_width()
+            type_text = self.primary_panel_font.render(f"({body_type})", True, (200, 200, 200))
+            mass_text = self.primary_panel_font.render(f"Mass: {body_mass:.3g} M⊙", True, (255, 255, 255))
+            vel_mag_text = self.primary_panel_font.render(f"Velocity: {body_vel_magnitude:.3g} AU/yr", True, (255, 255, 255))
+            vel_kms_text = self.primary_panel_font.render(f"         ({velocity_to_km_per_s(body_vel_magnitude):.3g} km/s)", True, (200, 200, 200))
+            vel_vec_text = self.secondary_panel_font.render(f"(vx: {body_vel[0]:.3g}, vy: {body_vel[1]:.3g}) AU/yr", True, (200, 200, 200))
             screen.blit(name_text, (panel_x + 10, panel_y + 10))
-            screen.blit(mass_text, (panel_x + 10, panel_y + 50))   # Normal spacing of 30 pixels, 40 here to add extra space
-            screen.blit(vel_mag_text, (panel_x + 10, panel_y + 80))
-            screen.blit(vel_vec_text, (panel_x + 10, panel_y + 110))
+            screen.blit(type_text, (panel_x + 10 + name_width + 5, panel_y + 10 + 4)) # Slight offset to align with name
+            screen.blit(mass_text, (panel_x + 10, panel_y + 40))   # Normal spacing of 25 pixels, 30 here to add extra space
+            screen.blit(vel_mag_text, (panel_x + 10, panel_y + 65))
+            screen.blit(vel_kms_text, (panel_x + 10, panel_y + 90))
+            screen.blit(vel_vec_text, (panel_x + 10, panel_y + 115))
 
         # === PAUSE/REWIND INDICATOR (Center-Top) ===
         if self.rewinding:
