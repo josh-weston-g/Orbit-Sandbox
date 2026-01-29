@@ -25,11 +25,12 @@ class SimulationRunner:
     Frame-based (no internal loop) - called by SimulationView.
     """
     
-    def __init__(self, screen_size, system_path):
+    def __init__(self, screen_size, system_path, clock):
         """Initialize the simulation with the given system"""
         # Load system
         self.bodies, self.G, self.metadata = SystemLoader.load_from_file(system_path)
         self.system_path = system_path # Store for potential reloads
+        self.clock = clock
 
         # Screen dimensions
         self.window_width, self.window_height = screen_size
@@ -56,8 +57,6 @@ class SimulationRunner:
         self.REWIND_ICON = "\uf04a"
 
         # Timing and scale
-        self.clock = pygame.time.Clock()
-        self.FPS = 60
         self.elapsed_sim_time = 0.0
         self.elapsed_real_time = 0.0
         self.scale = 200  # pixels per AU
@@ -333,7 +332,7 @@ class SimulationRunner:
 
         # === HUD ===
         # TOP-RIGHT: Technical info
-        fps_text = self.primary_hud_font.render(f"FPS: {self.clock.get_fps():.0f}", True, (255, 255, 255))  #! Not currently working
+        fps_text = self.primary_hud_font.render(f"FPS: {self.clock.get_fps():.0f}", True, (255, 255, 255))
         zoom_text = self.primary_hud_font.render(f"Zoom: {(self.scale / 200):.2f}x", True, (255, 255, 255))
         bodies_text = self.primary_hud_font.render(f"Bodies: {len(self.sim.bodies)}", True, (255, 255, 255))
         screen.blit(fps_text, (self.window_width - fps_text.get_width() - 10, 10))

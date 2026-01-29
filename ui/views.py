@@ -258,9 +258,9 @@ class LoadSystemView:
 class SimulationView:
     """Thin wrapper around SimulationRunner to fit in the view system."""
 
-    def __init__(self, screen_size, system_path):
+    def __init__(self, screen_size, system_path, clock):
         """Initialize simulation view with the selected system"""
-        self.runner = SimulationRunner(screen_size, system_path)
+        self.runner = SimulationRunner(screen_size, system_path, clock)
         self._next_view = None
 
     def process_event(self, event):

@@ -80,7 +80,8 @@ if __name__ == "__main__":
                 # Create simulation view with selected system
                 views["simulation"] = SimulationView(
                     (window_width, window_height),
-                    selected_system_path
+                    selected_system_path,
+                    clock
                 )
 
         if next_view_name == "quit":
