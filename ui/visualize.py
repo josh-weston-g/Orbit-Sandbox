@@ -314,11 +314,17 @@ class SimulationRunner:
             
             # Fixed body radius
             body_radius = 8
+            body_border_radius = body_radius + 2
             
             # Get color from palette
             color = BODY_COLORS[i % len(BODY_COLORS)]
             
+            # Highlight selected body - must be drawn first to appear underneath
+            if self.selected_body_index == i:
+                pygame.draw.circle(screen, (255, 0, 0), (int(body_screen_x), int(body_screen_y)), body_border_radius)
+            
             pygame.draw.circle(screen, color, (int(body_screen_x), int(body_screen_y)), body_radius)
+
 
         # === HUD ===
         # TOP-RIGHT: Technical info
