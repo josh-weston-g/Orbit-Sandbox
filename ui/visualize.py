@@ -372,12 +372,22 @@ class SimulationRunner:
         if self.selected_body_index is not None:
             body = self.sim.bodies[self.selected_body_index]
             
-            # Get body name (or fallback if not present) and other attributes
-            body_name = getattr(body, 'name', f"Body {self.selected_body_index + 1}")
+            # Get body name and other attributes
+            body_name = body.name
             body_type = getattr(body, 'type', "body")
             body_mass = body.mass
             body_vel = body.vel
             body_vel_magnitude = np.linalg.norm(body_vel)
+
+            # Find distance to closest other body
+            min_distance = float('inf')
+            closest_body_name = "N/A"
+            for i, other_body in enumerate(self.sim.bodies):
+                if i != self.selected_body_index:
+                    distance = np.linalg.norm(body.pos - other_body.pos)
+                    if distance < min_distance:
+                        min_distance = distance
+                        closest_body_name = other_body.name
             
             # Render all text surfaces first to measure them
             name_text = self.bold_hud_font.render(body_name, True, (255, 255, 255))
@@ -386,6 +396,7 @@ class SimulationRunner:
             vel_mag_text = self.primary_panel_font.render(f"Velocity: {body_vel_magnitude:.3g} AU/yr", True, (255, 255, 255))
             vel_kms_text = self.primary_panel_font.render(f"         ({velocity_to_km_per_s(body_vel_magnitude):.3g} km/s)", True, (200, 200, 200))
             vel_vec_text = self.secondary_panel_font.render(f"(vx: {body_vel[0]:.3g}, vy: {body_vel[1]:.3g}) AU/yr", True, (200, 200, 200))
+            distance_text = self.primary_panel_font.render(f"Closest Body: {closest_body_name} ({min_distance:.3g} AU)", True, (255, 255, 255))
             
             # Calculate required width
             name_width = name_text.get_width()
@@ -396,7 +407,8 @@ class SimulationRunner:
                 mass_text.get_width(),
                 vel_mag_text.get_width(),
                 vel_kms_text.get_width(),
-                vel_vec_text.get_width()
+                vel_vec_text.get_width(),
+                distance_text.get_width()
             )
             
             # Panel dimensions with dynamic width based on longest line of text
@@ -434,19 +446,13 @@ class SimulationRunner:
             screen.blit(x_text, (close_button_x + 4, close_button_y - 2))
             
             # Draw body info text
-            name_text = self.bold_hud_font.render(body_name, True, (255, 255, 255))
-            name_width = name_text.get_width()
-            type_text = self.primary_panel_font.render(f"({body_type})", True, (200, 200, 200))
-            mass_text = self.primary_panel_font.render(f"Mass: {body_mass:.3g} M⊙", True, (255, 255, 255))
-            vel_mag_text = self.primary_panel_font.render(f"Velocity: {body_vel_magnitude:.3g} AU/yr", True, (255, 255, 255))
-            vel_kms_text = self.primary_panel_font.render(f"         ({velocity_to_km_per_s(body_vel_magnitude):.3g} km/s)", True, (200, 200, 200))
-            vel_vec_text = self.secondary_panel_font.render(f"(vx: {body_vel[0]:.3g}, vy: {body_vel[1]:.3g}) AU/yr", True, (200, 200, 200))
             screen.blit(name_text, (panel_x + 10, panel_y + 10))
             screen.blit(type_text, (panel_x + 10 + name_width + 5, panel_y + 10 + 4)) # Slight offset to align with name
             screen.blit(mass_text, (panel_x + 10, panel_y + 40))   # Normal spacing of 25 pixels, 30 here to add extra space
             screen.blit(vel_mag_text, (panel_x + 10, panel_y + 65))
             screen.blit(vel_kms_text, (panel_x + 10, panel_y + 90))
             screen.blit(vel_vec_text, (panel_x + 10, panel_y + 115))
+            screen.blit(distance_text, (panel_x + 10, panel_y + 140))
 
         # === PAUSE/REWIND INDICATOR (Center-Top) ===
         if self.rewinding:
