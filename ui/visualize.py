@@ -36,11 +36,13 @@ class SimulationRunner:
         # Load fonts
         try:
             self.icon_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 48)
+            self.bold_hud_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Bold.ttf", 24)
             self.primary_hud_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 24)
             self.secondary_hud_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 20)
         except FileNotFoundError:
             print("⚠ JetBrains Mono Nerd Font not found, using system font")
             self.icon_font = pygame.font.Font(None, 48)
+            self.bold_hud_font = pygame.font.Font(None, 24)
             self.primary_hud_font = pygame.font.Font(None, 24)
             self.secondary_hud_font = pygame.font.Font(None, 20)
 
@@ -359,12 +361,15 @@ class SimulationRunner:
         if self.selected_body_index is not None:
             body = self.sim.bodies[self.selected_body_index]
             
-            # Get body name (or fallback if not present)
+            # Get body name (or fallback if not present) and other attributes
             body_name = getattr(body, 'name', f"Body {self.selected_body_index + 1}")
+            body_mass = body.mass
+            body_vel = body.vel # Numpy array
+            body_vel_magnitude = np.linalg.norm(body_vel)
             
             # Panel dimensions
-            panel_width = 250
-            panel_height = 80
+            panel_width = 400
+            panel_height = 200
             panel_x = self.window_width - panel_width - 20
             panel_y = self.window_height - panel_height - 20
             
@@ -395,9 +400,15 @@ class SimulationRunner:
             x_text = self.secondary_hud_font.render("×", True, (255, 255, 255))
             screen.blit(x_text, (close_button_x + 4, close_button_y - 2))
             
-            # Draw body name #! add more info later (mass, velocity, etc.)
-            name_text = self.primary_hud_font.render(body_name, True, (255, 255, 255))
+            # Draw body name #! Add units, work on s.f.
+            name_text = self.bold_hud_font.render(body_name, True, (255, 255, 255))
+            mass_text = self.primary_hud_font.render(f"Mass: {body_mass:.3g}", True, (255, 255, 255))
+            vel_mag_text = self.primary_hud_font.render(f"Velocity: {body_vel_magnitude:.3g}", True, (255, 255, 255))
+            vel_vec_text = self.secondary_hud_font.render(f"(vx: {body_vel[0]:.3g}, vy: {body_vel[1]:.3g})", True, (200, 200, 200))
             screen.blit(name_text, (panel_x + 10, panel_y + 10))
+            screen.blit(mass_text, (panel_x + 10, panel_y + 50))   # Normal spacing of 30 pixels, 40 here to add extra space
+            screen.blit(vel_mag_text, (panel_x + 10, panel_y + 80))
+            screen.blit(vel_vec_text, (panel_x + 10, panel_y + 110))
 
         # === PAUSE/REWIND INDICATOR (Center-Top) ===
         if self.rewinding:
