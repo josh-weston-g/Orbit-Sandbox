@@ -101,6 +101,10 @@ class LoadSystemView:
         self._next_view = None
         self.selected_system = None
 
+        # Hover tracking
+        self.hovered_button = None
+        self.hovered_system_path = None
+
         # Load systems from both directories
         systems = SystemLoader.list_systems()
         self.default_systems = systems['default']
@@ -218,6 +222,16 @@ class LoadSystemView:
             manager=self.manager
         )
 
+    def get_system_description(self, system_path):
+        """Load and return the description from a system's JSON file."""
+        import json
+        try:
+            with open(system_path, 'r') as f:
+                data = json.load(f)
+                return data.get('description', 'No description available.')
+        except Exception as e:
+            return f"Error loading description: {e}"
+
     def process_event(self, event):
         """Handle events for this view."""
         self.manager.process_events(event)
@@ -244,10 +258,114 @@ class LoadSystemView:
         """Update the UI manager."""
         self.manager.update(time_delta)
 
+        # Get mouse position
+        mouse_pos = pygame.mouse.get_pos()
+
+        currently_hovered = None
+        hovered_path = None
+
+        # Check default system buttons for hover
+        for button, system_path in self.default_buttons:
+            if button.rect.collidepoint(mouse_pos):
+                currently_hovered = button
+                hovered_path = system_path
+                break
+
+        # Check custom system buttons for hover if no default button is hovered
+        if currently_hovered is None:
+            for button, system_path in self.custom_buttons:
+                if button.rect.collidepoint(mouse_pos):
+                    currently_hovered = button
+                    hovered_path = system_path
+                    break
+
+        # Update hover state
+        if currently_hovered != self.hovered_button:
+            # Mouse moved to a different button (or none)
+            self.hovered_button = currently_hovered
+            self.hovered_system_path = hovered_path
+        
+        # If not hovering over anything, reset
+        if currently_hovered is None:
+            self.hovered_button = None
+            self.hovered_system_path = None
+
     def draw(self, screen):
         """Draw the UI elements to the surface."""
         screen.fill((20, 20, 30))  # Darker blue-gray background
         self.manager.draw_ui(screen)
+
+        # Draw tooltip if hovering over a system button
+        if self.hovered_button and self.hovered_system_path:
+            # Load description for hovered system
+            description = self.get_system_description(self.hovered_system_path)
+
+            # Create tooltip
+            try:
+                tooltip_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 20)
+            except FileNotFoundError:
+                tooltip_font = pygame.font.Font(None, 20)
+
+            # Word wrap the description to fit in tooltip
+            max_tooltip_width = 300
+            words = description.split(' ')
+            lines = []
+            current_line = []
+
+            for word in words:
+                test_line = ' '.join(current_line + [word])
+                test_surface = tooltip_font.render(test_line, True, (255, 255, 255))
+
+                if test_surface.get_width() <= max_tooltip_width - 20:
+                    current_line.append(word)
+                else:
+                    if current_line:
+                        lines.append(' '.join(current_line))
+                    current_line = [word]
+
+            if current_line:
+                lines.append(' '.join(current_line))
+
+            # Calculate tooltip dimensions
+            line_height = 25
+            tooltip_height = len(lines) * line_height + 20
+            tooltip_width = max_tooltip_width
+
+            # Position tooltip to the right of the button
+            button_rect = self.hovered_button.rect
+            tooltip_x = button_rect.right + 20
+            tooltip_y = button_rect.top
+
+            # Make sure tooltip stays on screen
+            screen_w, screen_h = screen.get_size()
+            # If goes off right edge, keep it on right but align to screen edge
+            if tooltip_x + tooltip_width > screen_w:
+                tooltip_x = screen_w - tooltip_width - 20
+
+            # If goes off bottom edge, shift it up
+            if tooltip_y + tooltip_height > screen_h:
+                tooltip_y = screen_h - tooltip_height - 10
+
+            # If goes off top edge, shift it down
+            if tooltip_y < 0:
+                tooltip_y = 10
+
+            # Draw semi-transparent background
+            tooltip_surface = pygame.Surface((tooltip_width, tooltip_height))
+            tooltip_surface.set_alpha(150)
+            tooltip_surface.fill((50, 50, 50))  # Dark background
+            screen.blit(tooltip_surface, (tooltip_x, tooltip_y))
+
+            # Draw border
+            pygame.draw.rect(screen, (100, 100, 100),
+                            (tooltip_x, tooltip_y, tooltip_width, tooltip_height), 2)
+
+            # Draw text lines
+            text_y = tooltip_y + 10
+            for line in lines:
+                text_surface = tooltip_font.render(line, True, (255, 255, 255))
+                screen.blit(text_surface, (tooltip_x + 10, text_y))
+                text_y += line_height
 
     def get_next_view(self):
         """Return next view name if user requested a switch, then reset."""
