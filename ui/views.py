@@ -16,13 +16,22 @@ class MainMenuView:
 
         param: screen_size: tuple (width, height) of the display surface.
         """
-        self.manager = pygame_gui.UIManager(screen_size)
+        self.manager = pygame_gui.UIManager(screen_size, 'assets/themes/main_menu_theme.json')
         self._next_view = None
+
+        # Load background image
+        try:
+            self.background = pygame.image.load('assets/images/main_menu_bg.jpg').convert()
+            # Scale it to fit the screen
+            self.background = pygame.transform.scale(self.background, screen_size)
+        except FileNotFoundError:
+            print("Warning: Main menu background image not found.")
+            self.background = None
 
         screen_w, screen_h = screen_size
 
         # Create centered panel
-        panel_width, panel_height = 400, 350
+        panel_width, panel_height = 350, 400
         panel_x = (screen_w - panel_width) // 2
         panel_y = (screen_h - panel_height) // 2
 
@@ -54,9 +63,16 @@ class MainMenuView:
             container=panel
         )
 
+        self.btn_settings = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((button_x, button_y + 2 * (button_h + gap)), (button_w, button_h)),
+            text="Settings",
+            manager=self.manager,
+            container=panel
+        )
+
         # Quit Button
         self.btn_quit = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((button_x, button_y + 2 * (button_h + gap)), (button_w, button_h)),
+            relative_rect=pygame.Rect((button_x, button_y + 3 * (button_h + gap)), (button_w, button_h)),
             text="Quit",
             manager=self.manager,
             container=panel
@@ -70,6 +86,8 @@ class MainMenuView:
                 self._next_view = 'new_system'
             elif event.ui_element == self.btn_load:
                 self._next_view = 'load_system'
+            elif event.ui_element == self.btn_settings:
+                self._next_view = 'settings'
             elif event.ui_element == self.btn_quit:
                 self._next_view = 'quit'
 
@@ -79,7 +97,10 @@ class MainMenuView:
 
     def draw(self, screen):
         """Draw the UI elements to the surface."""
-        screen.fill((20, 20, 30))  # Dark blue-gray background
+        if self.background:
+            screen.blit(self.background, (0, 0))
+        else:
+            screen.fill((30, 30, 40))  # Fallback background color
         self.manager.draw_ui(screen)
 
     def get_next_view(self):

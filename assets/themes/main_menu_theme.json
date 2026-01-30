@@ -1,0 +1,29 @@
+{
+    "button": {
+        "colours": {
+            "normal_bg": "#3a3a3a",
+            "hovered_bg": "#4a4a4a",
+            "active_bg": "#2a2a2a",
+            "normal_text": "#ffffff",
+            "hovered_text": "#ffffff",
+            "active_text": "#ffffff"
+        },
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "15",
+            "border_width": "1",
+            "shadow_width": "2"
+        }
+    },
+    "panel": {
+        "colours": {
+            "dark_bg": "#28282e",
+            "normal_border": "#4a4a4a"
+        },
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "10",
+            "border_width": "1"
+        }
+    }
+}
