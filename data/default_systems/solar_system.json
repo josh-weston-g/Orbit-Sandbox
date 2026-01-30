@@ -1,6 +1,6 @@
 {
     "name": "Solar System",
-    "description": "Complete inner and outer solar system with all major planets",
+    "description": "Complete solar system with all 8 planets orbiting the Sun.",
     "bodies": [
     {
         "mass": 1.0,
