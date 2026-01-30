@@ -29,6 +29,7 @@ A physics-accurate Newtonian orbital mechanics simulator built from first princi
 - [Known Limitations & Future Work](#known-limitations--future-work)
 - [Contributing](#contributing)
 - [License](#license)
+- [Assets & Credits](#assets--credits)
 - [Author](#author)
 
 ## What it does
@@ -296,6 +297,14 @@ Since this is a work in progress, feel free to open issues with ideas, bugs, or 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Assets & Credits
+
+#### Images 
+- Menu Background: [Vecteezy]("https://www.vecteezy.com/free-photos/space")
+
+#### Fonts
+- JetBrains Mono Nerd Font: [Nerd Fonts]("https:://www.nerdfonts.com/")
 
 ## Author
 
