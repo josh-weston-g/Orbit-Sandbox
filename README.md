@@ -304,7 +304,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Menu Background: [Vecteezy](https://www.vecteezy.com/free-photos/space)
 
 #### Fonts
-- JetBrains Mono Nerd Font: [Nerd Fonts](https:://www.nerdfonts.com/)
+- JetBrains Mono Nerd Font: [Nerd Fonts](https://www.nerdfonts.com/)
 
 ## Author
 
