@@ -1,29 +1,47 @@
 {
+    "#main_button_font": {
+        "font": {
+            "name": "JetBrains Mono",
+            "size": "18",
+            "bold": "1",
+            "regular_path": "assets/fonts/JetBrainsMonoNerdFont-Medium.ttf"
+        }
+    },
     "button": {
+        "prototype": "#main_button_font",
         "colours": {
-            "normal_bg": "#3a3a3a",
-            "hovered_bg": "#4a4a4a",
-            "active_bg": "#2a2a2a",
-            "normal_text": "#ffffff",
+            "normal_bg": "#1a365d",
+            "hovered_bg": "#2a4a7a",
+            "active_bg": "#0f2847",
+            "disabled_bg": "#1e3a5f",
+            "normal_text": "#e2e8f0",
             "hovered_text": "#ffffff",
-            "active_text": "#ffffff"
+            "active_text": "#94a3b8",
+            "disabled_text": "#64748b",
+            "normal_border": "#3b82f6",
+            "hovered_border": "#60a5fa",
+            "active_border": "#2563eb",
+            "disabled_border": "#334155"
         },
         "misc": {
             "shape": "rounded_rectangle",
-            "shape_corner_radius": "15",
-            "border_width": "1",
-            "shadow_width": "2"
+            "shape_corner_radius": "12",
+            "border_width": "2",
+            "shadow_width": "4",
+            "text_horiz_alignment": "center",
+            "text_vert_alignment": "center"
         }
     },
     "panel": {
         "colours": {
-            "dark_bg": "#28282e",
-            "normal_border": "#4a4a4a"
+            "dark_bg": "#0c1929",
+            "normal_border": "#1e40af"
         },
         "misc": {
             "shape": "rounded_rectangle",
-            "shape_corner_radius": "10",
-            "border_width": "1"
+            "shape_corner_radius": "16",
+            "border_width": "2",
+            "shadow_width": "6"
         }
     }
 }
