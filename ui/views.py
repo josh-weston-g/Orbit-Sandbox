@@ -30,8 +30,22 @@ class MainMenuView:
 
         screen_w, screen_h = screen_size
 
-        # Create centered panel
-        panel_width, panel_height = 350, 400
+        # Define button properties first
+        button_w = 300
+        button_h = 60
+        gap = 20
+        padding = 40  # Padding around buttons inside panel
+        
+        # Define button labels - buttons must still be created using pygame_gui.elements.UIButton below
+        button_labels = ["New System", "Load System", "Settings", "Quit"]
+        num_buttons = len(button_labels)
+        
+        # Calculate panel dimensions based on button count
+        panel_width = button_w + (padding * 2)
+        total_content_height = (num_buttons * button_h) + ((num_buttons - 1) * gap)
+        panel_height = total_content_height + (padding * 2)
+        
+        # Center panel on screen
         panel_x = (screen_w - panel_width) // 2
         panel_y = (screen_h - panel_height) // 2
 
@@ -40,40 +54,35 @@ class MainMenuView:
             manager=self.manager
         )
 
-        # Create buttons inside panel
-        button_w = 300
-        button_h = 60
-        button_x = (panel_width - button_w) // 2
-        button_y = 50
-        gap = 20
+        # Center buttons inside panel
+        button_x = (panel_width - button_w) // 2 - 4  # Offset for border/shadow
+        button_y = padding - 4  # Offset for border/shadow
 
-        # New System Button
+        # Create buttons
         self.btn_new = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((button_x, button_y), (button_w, button_h)),
-            text="New System",
+            text=button_labels[0],
             manager=self.manager,
             container=panel
         )
 
-        # Load System Button
         self.btn_load = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((button_x, button_y + button_h + gap), (button_w, button_h)),
-            text="Load System",
+            relative_rect=pygame.Rect((button_x, button_y + (button_h + gap)), (button_w, button_h)),
+            text=button_labels[1],
             manager=self.manager,
             container=panel
         )
 
         self.btn_settings = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((button_x, button_y + 2 * (button_h + gap)), (button_w, button_h)),
-            text="Settings",
+            text=button_labels[2],
             manager=self.manager,
             container=panel
         )
 
-        # Quit Button
         self.btn_quit = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((button_x, button_y + 3 * (button_h + gap)), (button_w, button_h)),
-            text="Quit",
+            text=button_labels[3],
             manager=self.manager,
             container=panel
         )
