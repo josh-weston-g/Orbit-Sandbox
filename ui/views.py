@@ -189,6 +189,9 @@ class LoadSystemView:
         # Center horizontally
         panel_x = (screen_w - panel_w) // 2
 
+        # Inset panel inside background panels for scrollable areas
+        panel_inset = 8
+
         # Calculate vertical positions
         default_label_y = title_area
         default_panel_y = default_label_y + label_height + label_gap
@@ -220,9 +223,9 @@ class LoadSystemView:
             manager=self.manager
         )
 
-        # Create scrollable panel for default systems ON TOP of background
+        # Create scrollable panel on top of background panel
         self.default_panel = pygame_gui.elements.UIScrollingContainer(
-            relative_rect=pygame.Rect((panel_x, default_panel_y), (panel_w, panel_h)),
+            relative_rect=pygame.Rect((panel_x, default_panel_y + panel_inset), (panel_w , panel_h - 2 * panel_inset)),
             manager=self.manager
         )
 
@@ -269,9 +272,9 @@ class LoadSystemView:
             manager=self.manager
         )
 
-        # Create scrollable panel for custom systems
+        # Create scrollable panel on top of background panel
         self.custom_panel = pygame_gui.elements.UIScrollingContainer(
-            relative_rect=pygame.Rect((panel_x, custom_panel_y), (panel_w, panel_h)),
+            relative_rect=pygame.Rect((panel_x, custom_panel_y + panel_inset), (panel_w , panel_h - 2 * panel_inset)),
             manager=self.manager
         )
 
