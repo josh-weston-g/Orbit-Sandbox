@@ -518,26 +518,37 @@ class LoadSystemView(BaseView):
         ref_height = 1080
         scale_factor = self.height / ref_height
         
+        # Layout constants (in reference resolution pixels)
+        TITLE_HEIGHT = 80
+        TITLE_TOP_MARGIN = 50
+        TITLE_BOTTOM_GAP = 20
+        BACK_BUTTON_AREA = 80
+        BUTTON_SPACING_ABOVE = 15
+        BUTTON_BOTTOM_MARGIN = 10
+        CONTAINER_MIN_HEIGHT = 150
+        CONTAINER_MAX_WIDTH = 500
+        CONTAINER_SIDE_MARGIN = 100
+        
         # Minimum margins and sizes
-        self.title_height = int(80 * scale_factor)
-        self.title_y = int(50 * scale_factor)
+        self.title_height = int(TITLE_HEIGHT * scale_factor)
+        self.title_y = int(TITLE_TOP_MARGIN * scale_factor)
         
         # Container dimensions - responsive to window size
         container_config = self.theme.get_container_config()
         container_spacing = int(container_config.get('spacing', 30) * scale_factor)
         
         # Calculate available space for containers
-        top_margin = self.title_y + self.title_height + int(20 * scale_factor)
-        bottom_margin = int(80 * scale_factor)  # Space for back button
+        top_margin = self.title_y + self.title_height + int(TITLE_BOTTOM_GAP * scale_factor)
+        bottom_margin = int(BACK_BUTTON_AREA * scale_factor)
         
         available_height = self.height - top_margin - bottom_margin
         
         # Each container gets equal height
         container_height = (available_height - container_spacing) // 2
-        container_height = max(container_height, 150)  # Minimum height
+        container_height = max(container_height, CONTAINER_MIN_HEIGHT)
         
         # Container width - centered with margins
-        container_width = min(int(500 * scale_factor), self.width - int(100 * scale_factor))
+        container_width = min(int(CONTAINER_MAX_WIDTH * scale_factor), self.width - int(CONTAINER_SIDE_MARGIN * scale_factor))
         container_x = (self.width - container_width) // 2
         
         # Position containers
@@ -560,9 +571,9 @@ class LoadSystemView(BaseView):
         button_width = button_config.get('width', 260)
         button_height = button_config.get('height', 45)
         
-        button_y = self.container2_rect.bottom + int(15 * scale_factor)
+        button_y = self.container2_rect.bottom + int(BUTTON_SPACING_ABOVE * scale_factor)
         # Ensure button is always visible on screen
-        button_y = min(button_y, self.height - button_height - int(10 * scale_factor))
+        button_y = min(button_y, self.height - button_height - int(BUTTON_BOTTOM_MARGIN * scale_factor))
         
         self.back_button_rect = pygame.Rect(
             (self.width - button_width) // 2,
@@ -596,16 +607,10 @@ class LoadSystemView(BaseView):
     
     def _populate_containers(self):
         """Load and populate containers with system files."""
-        # Get all available systems
+        # Get all available systems from the built-in systems directory
         all_systems = SystemLoader.list_systems("data/systems")
         
-        # For this demo, we'll split them - first half builtin, second half custom
-        # In a real implementation, you'd have separate directories
-        mid = len(all_systems) // 2
-        builtin_systems = all_systems[:max(mid, len(all_systems))]
-        custom_systems = all_systems[mid:] if mid > 0 else []
-        
-        # Actually, let's put all in builtin for now since that's where they are
+        # All systems from data/systems are built-in; custom systems would be in a different directory
         builtin_systems = all_systems
         custom_systems = []  # Empty for now - user can add custom systems later
         

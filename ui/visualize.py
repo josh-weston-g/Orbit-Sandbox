@@ -66,18 +66,27 @@ def run_visualization(resolution):
     
     pygame.display.set_caption("Orbit Sandbox")
     
-    # Show menu to select system
-    system_path = show_menu(screen)
-    if system_path is None:
-        pygame.quit()
-        return  # User chose to exit
-
-    # Run the simulation
-    run_simulation(screen, system_path, resolution, window_width, window_height)
+    # Main application loop - handles menu/simulation transitions without recursion
+    while True:
+        # Show menu to select system
+        system_path = show_menu(screen)
+        if system_path is None:
+            pygame.quit()
+            return  # User chose to exit
+        
+        # Run the simulation, returns True if user wants to return to menu
+        return_to_menu = run_simulation(screen, system_path, resolution, window_width, window_height)
+        
+        if not return_to_menu:
+            pygame.quit()
+            return
 
 
 def run_simulation(screen, system_path, resolution, window_width, window_height):
-    """Run the actual orbital simulation with the selected system."""
+    """Run the actual orbital simulation with the selected system.
+    
+    Returns True if user wants to return to menu, False to exit.
+    """
     # Load system from JSON file
     bodies, G, metadata = SystemLoader.load_from_file(system_path)
 
@@ -409,15 +418,6 @@ def run_simulation(screen, system_path, resolution, window_width, window_height)
 
         pygame.display.flip()
 
-    # After simulation loop ends, check if we should return to menu
-    if return_to_menu:
-        # Return to menu by calling run_visualization again
-        show_menu_result = show_menu(screen)
-        if show_menu_result is not None:
-            # Load new system and restart simulation
-            run_simulation(screen, show_menu_result, resolution, window_width, window_height)
-        else:
-            pygame.quit()
-    else:
-        pygame.quit()
+    # Return True if user wants to return to menu, False to exit
+    return return_to_menu
 
