@@ -160,7 +160,7 @@
         "prototype": "#label_font",
         "colours": {
             "dark_bg": "#00000000",
-            "normal_text": "#94a3b8"
+            "normal_text": "#f1f5f9"
         }
     }
 }
