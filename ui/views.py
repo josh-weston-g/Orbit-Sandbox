@@ -45,9 +45,57 @@ class MainMenuView:
         total_content_height = (num_buttons * button_h) + ((num_buttons - 1) * gap)
         panel_height = total_content_height + (padding * 2)
         
-        # Center panel on screen
+        # Calculate dynamic title font size - scale with screen height
+        title_font_size = max(36, min(96, int(screen_h * 0.065)))
+        
+        # Load title font
+        try:
+            title_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Bold.ttf", title_font_size)
+        except FileNotFoundError:
+            title_font = pygame.font.Font(None, title_font_size)
+        
+        # Render title
+        self.title_surface = title_font.render("ORBIT SANDBOX", True, (220, 220, 230))
+        title_rect = self.title_surface.get_rect()
+        
+        # Load and render description
+        description_font_size = max(16, min(24, int(screen_h * 0.02)))
+        try:
+            description_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", description_font_size)
+        except FileNotFoundError:
+            description_font = pygame.font.Font(None, description_font_size)
+        
+        self.description_surface = description_font.render("Interactive Orbital Simulator", True, (180, 180, 190))
+        description_rect = self.description_surface.get_rect()
+        
+        # Calculate spacing and positioning
+        desc_gap = int(screen_h * 0.02)  # Gap between title and description
+        title_spacing = int(screen_h * 0.12)  # Gap between description and panel
+        
+        # Calculate total height including both title and description
+        title_group_height = title_rect.height + desc_gap + description_rect.height
+        total_menu_height = title_group_height + title_spacing + panel_height
+        menu_start_y = (screen_h - total_menu_height) // 2
+        
+        # Create semi-transparent background for title area
+        bg_padding = 30
+        title_bg_width = max(title_rect.width, description_rect.width) + (bg_padding * 2)
+        title_bg_height = title_group_height + (bg_padding * 2)
+        title_bg_x = (screen_w - title_bg_width) // 2
+        title_bg_y = menu_start_y - bg_padding
+        
+        self.title_bg_surface = pygame.Surface((title_bg_width, title_bg_height))
+        self.title_bg_surface.set_alpha(180)
+        self.title_bg_surface.fill((15, 20, 30))
+        self.title_bg_position = (title_bg_x, title_bg_y)
+        
+        # Store title and description positions (centered)
+        self.title_position = ((screen_w - title_rect.width) // 2, menu_start_y)
+        self.description_position = ((screen_w - description_rect.width) // 2, menu_start_y + title_rect.height + desc_gap)
+        
+        # Position panel below title group
         panel_x = (screen_w - panel_width) // 2
-        panel_y = (screen_h - panel_height) // 2
+        panel_y = menu_start_y + title_group_height + title_spacing
 
         panel = pygame_gui.elements.UIPanel(
             relative_rect=pygame.Rect(panel_x, panel_y, panel_width, panel_height),
@@ -110,6 +158,14 @@ class MainMenuView:
             screen.blit(self.background, (0, 0))
         else:
             screen.fill((30, 30, 40))  # Fallback background color
+        
+        # Draw title background
+        screen.blit(self.title_bg_surface, self.title_bg_position)
+        
+        # Draw title and description
+        screen.blit(self.title_surface, self.title_position)
+        screen.blit(self.description_surface, self.description_position)
+        
         self.manager.draw_ui(screen)
 
     def get_next_view(self):
