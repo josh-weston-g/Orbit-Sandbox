@@ -57,7 +57,9 @@ Orbit-Sandbox/
 ├── main.py                # Entry point - main loop, view management, resolution handling
 ├── requirements.txt       # Python dependencies
 ├── assets/
-│   └── fonts/             # JetBrains Mono Nerd Font (Regular and Bold)
+│   ├── fonts/             # JetBrains Mono Nerd Font (Regular and Bold)
+│   ├── images/            # Images used in the app (Menu Background, etc.)
+│   └── themes/            # JSON files defining styles for menu components
 ├── data/
 │   ├── default_systems/   # JSON default system definitions
 │   │   ├── binary_stars.json
