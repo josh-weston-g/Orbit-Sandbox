@@ -21,7 +21,7 @@ class MainMenuView:
 
         # Load background image
         try:
-            self.background = pygame.image.load('assets/images/main_menu_bg.jpg').convert()
+            self.background = pygame.image.load('assets/images/menu_bg.jpg').convert()
             # Scale it to fit the screen
             self.background = pygame.transform.scale(self.background, screen_size)
         except FileNotFoundError:
@@ -121,19 +121,33 @@ class MainMenuView:
 class LoadSystemView:
     """View for loading orbital systems from files."""
 
+    # Layout constants
+    MIN_PANEL_HEIGHT = 100  # Minimum height for scrollable panels
+    MIN_PANEL_WIDTH = 300   # Minimum width for panels
+    MAX_PANEL_WIDTH = 500   # Maximum width for panels
+    SCROLLBAR_WIDTH = 20    # Width of the scrollbar in scrollable containers
+
     def __init__(self, screen_size):
         """
         Initialize the load system view.
         
         param: screen_size: tuple (width, height) of the display surface.
         """
-        self.manager = pygame_gui.UIManager(screen_size)
+        self.manager = pygame_gui.UIManager(screen_size, 'assets/themes/load_system_theme.json')
         self._next_view = None
         self.selected_system = None
 
         # Hover tracking
         self.hovered_button = None
         self.hovered_system_path = None
+
+        # Load background image (shared with main menu)
+        try:
+            self.background = pygame.image.load('assets/images/menu_bg.jpg').convert()
+            self.background = pygame.transform.scale(self.background, screen_size)
+        except FileNotFoundError:
+            print("Warning: Menu background image not found.")
+            self.background = None
 
         # Load systems from both directories
         systems = SystemLoader.list_systems()
@@ -142,31 +156,62 @@ class LoadSystemView:
 
         screen_w, screen_h = screen_size
 
-        # Calculate dimensions for scrollable containers
-        panel_w = int(screen_w * 0.3)
-        panel_h = int(screen_h * 0.35)
-
+        # Calculate responsive dimensions based on screen size
+        # Title section takes ~10% of height
+        title_height = int(screen_h * 0.08)
+        title_y = int(screen_h * 0.02)
+        
+        # Section labels height
+        label_height = 25
+        label_gap = 8
+        
+        # Back button at bottom - ensure it's always visible
+        back_button_h = 50
+        bottom_margin = int(screen_h * 0.03)  # 3% margin at bottom
+        
+        # Gap between panels
+        panel_gap = int(screen_h * 0.04)
+        
+        # Calculate available height for panels
+        # Available = screen_h - title area - 2x labels - gap between panels - back button area - margins
+        title_area = title_y + title_height + int(screen_h * 0.02)
+        back_area = back_button_h + bottom_margin
+        available_height = screen_h - title_area - (2 * (label_height + label_gap)) - panel_gap - back_area
+        
+        # Each panel gets half the available height (ensure they're always equal)
+        panel_h = max(int(available_height / 2), self.MIN_PANEL_HEIGHT)
+        
+        # Panel width - constrained between min and max
+        panel_w = int(screen_w * 0.35)
+        panel_w = max(panel_w, self.MIN_PANEL_WIDTH)
+        panel_w = min(panel_w, self.MAX_PANEL_WIDTH)
+        
         # Center horizontally
         panel_x = (screen_w - panel_w) // 2
 
-        # Position vertically - leave space for title at top
-        title_space = 100
-        default_panel_y = title_space
-        gap = 50 # Space between panels
-        custom_panel_y = default_panel_y + panel_h + gap
+        # Calculate vertical positions
+        default_label_y = title_area
+        default_panel_y = default_label_y + label_height + label_gap
+        
+        custom_label_y = default_panel_y + panel_h + panel_gap
+        custom_panel_y = custom_label_y + label_height + label_gap
+        
+        back_button_y = custom_panel_y + panel_h + int(screen_h * 0.02)
 
         # Create title label at the top
         title_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((screen_w//2 - 150, 30), (300, 50)),
+            relative_rect=pygame.Rect((screen_w//2 - 200, title_y), (400, title_height)),
             text="Load Orbital System",
-            manager=self.manager
+            manager=self.manager,
+            object_id='#title_label'
         )
 
         # Create Default Systems label
         default_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((panel_x, default_panel_y - 30), (panel_w, 25)),
+            relative_rect=pygame.Rect((panel_x, default_label_y), (panel_w, label_height)),
             text="Default Systems",
-            manager=self.manager
+            manager=self.manager,
+            object_id='#section_label'
         )
 
         # Create background panel for default systems
@@ -181,34 +226,41 @@ class LoadSystemView:
             manager=self.manager
         )
 
-        # Add buttons for each default system
-        button_w = panel_w - 40
+        # Calculate button dimensions - account for scrollbar width
+        button_margin = 15
+        # Button width fills container, centered regardless of scrollbar
+        button_w = panel_w - (button_margin * 2) - self.SCROLLBAR_WIDTH
         button_h = 40
-        button_y = 10
+        button_spacing = 10
+        button_y = button_margin
+        
         self.default_buttons = []
 
         for system_name, system_path in self.default_systems:
             display_name = system_name.replace('_', ' ').title()
 
             button = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((10, button_y), (button_w, button_h)),
+                relative_rect=pygame.Rect((button_margin, button_y), (button_w, button_h)),
                 text=display_name,
                 manager=self.manager,
-                container=self.default_panel
+                container=self.default_panel,
+                object_id='#system_button'
             )
 
             # Store button with its system path
             self.default_buttons.append((button, system_path))
-            button_y += button_h + 10  # Move down for next button
+            button_y += button_h + button_spacing
 
         # Set the scrollable area dimensions (total content height)
-        self.default_panel.set_scrollable_area_dimensions((panel_w - 20, button_y + 10))
+        content_height = button_y + button_margin
+        self.default_panel.set_scrollable_area_dimensions((panel_w - self.SCROLLBAR_WIDTH, content_height))
 
         # Create Custom Systems label
         custom_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((panel_x, custom_panel_y - 30), (panel_w, 25)),
+            relative_rect=pygame.Rect((panel_x, custom_label_y), (panel_w, label_height)),
             text="Custom Systems",
-            manager=self.manager
+            manager=self.manager,
+            object_id='#section_label'
         )
 
         # Create background panel for custom systems
@@ -224,30 +276,31 @@ class LoadSystemView:
         )
 
         # Add buttons for each custom system
-        button_y = 10
+        button_y = button_margin
         self.custom_buttons = []
 
         for system_name, system_path in self.custom_systems:
             display_name = system_name.replace('_', ' ').title()
 
             button = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((10, button_y), (button_w, button_h)),
+                relative_rect=pygame.Rect((button_margin, button_y), (button_w, button_h)),
                 text=display_name,
                 manager=self.manager,
-                container=self.custom_panel
+                container=self.custom_panel,
+                object_id='#system_button'
             )
 
             # Store button with its system path
             self.custom_buttons.append((button, system_path))
-            button_y += button_h + 10  # Move down for next button
+            button_y += button_h + button_spacing
 
         # Set the scrollable area dimensions (total content height)
-        self.custom_panel.set_scrollable_area_dimensions((panel_w - 20, button_y + 10))
+        content_height = button_y + button_margin
+        self.custom_panel.set_scrollable_area_dimensions((panel_w - self.SCROLLBAR_WIDTH, content_height))
 
-        # Add back button at the bottom
-        back_button_y = custom_panel_y + panel_h + 30
+        # Add back button at the bottom - uses default button style (main button)
         self.btn_back = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((panel_x, back_button_y), (panel_w, 50)),
+            relative_rect=pygame.Rect((panel_x, back_button_y), (panel_w, back_button_h)),
             text="Back",
             manager=self.manager
         )
@@ -322,7 +375,10 @@ class LoadSystemView:
 
     def draw(self, screen):
         """Draw the UI elements to the surface."""
-        screen.fill((20, 20, 30))  # Darker blue-gray background
+        if self.background:
+            screen.blit(self.background, (0, 0))
+        else:
+            screen.fill((20, 20, 30))  # Fallback background color
         self.manager.draw_ui(screen)
 
         # Draw tooltip if hovering over a system button
