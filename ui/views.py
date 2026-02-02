@@ -121,6 +121,12 @@ class MainMenuView:
 class LoadSystemView:
     """View for loading orbital systems from files."""
 
+    # Layout constants
+    MIN_PANEL_HEIGHT = 100  # Minimum height for scrollable panels
+    MIN_PANEL_WIDTH = 300   # Minimum width for panels
+    MAX_PANEL_WIDTH = 500   # Maximum width for panels
+    SCROLLBAR_WIDTH = 20    # Width of the scrollbar in scrollable containers
+
     def __init__(self, screen_size):
         """
         Initialize the load system view.
@@ -173,12 +179,12 @@ class LoadSystemView:
         available_height = screen_h - title_area - (2 * (label_height + label_gap)) - panel_gap - back_area
         
         # Each panel gets half the available height (ensure they're always equal)
-        panel_h = max(int(available_height / 2), 100)  # Minimum 100px height
+        panel_h = max(int(available_height / 2), self.MIN_PANEL_HEIGHT)
         
-        # Panel width
+        # Panel width - constrained between min and max
         panel_w = int(screen_w * 0.35)
-        panel_w = max(panel_w, 300)  # Minimum width
-        panel_w = min(panel_w, 500)  # Maximum width
+        panel_w = max(panel_w, self.MIN_PANEL_WIDTH)
+        panel_w = min(panel_w, self.MAX_PANEL_WIDTH)
         
         # Center horizontally
         panel_x = (screen_w - panel_w) // 2
@@ -221,10 +227,9 @@ class LoadSystemView:
         )
 
         # Calculate button dimensions - account for scrollbar width
-        scrollbar_width = 20
         button_margin = 15
         # Button width fills container, centered regardless of scrollbar
-        button_w = panel_w - (button_margin * 2) - scrollbar_width
+        button_w = panel_w - (button_margin * 2) - self.SCROLLBAR_WIDTH
         button_h = 40
         button_spacing = 10
         button_y = button_margin
@@ -248,7 +253,7 @@ class LoadSystemView:
 
         # Set the scrollable area dimensions (total content height)
         content_height = button_y + button_margin
-        self.default_panel.set_scrollable_area_dimensions((panel_w - scrollbar_width, content_height))
+        self.default_panel.set_scrollable_area_dimensions((panel_w - self.SCROLLBAR_WIDTH, content_height))
 
         # Create Custom Systems label
         custom_label = pygame_gui.elements.UILabel(
@@ -291,7 +296,7 @@ class LoadSystemView:
 
         # Set the scrollable area dimensions (total content height)
         content_height = button_y + button_margin
-        self.custom_panel.set_scrollable_area_dimensions((panel_w - scrollbar_width, content_height))
+        self.custom_panel.set_scrollable_area_dimensions((panel_w - self.SCROLLBAR_WIDTH, content_height))
 
         # Add back button at the bottom - uses default button style (main button)
         self.btn_back = pygame_gui.elements.UIButton(
