@@ -1,0 +1,39 @@
+{
+    "name": "Main Menu Theme",
+    "colors": {
+        "background": [15, 15, 30],
+        "title": [255, 255, 255],
+        "title_shadow": [80, 80, 160],
+        "subtitle": [180, 180, 200],
+        "button": {
+            "normal": [40, 40, 80],
+            "hover": [60, 60, 120],
+            "pressed": [30, 30, 60],
+            "text": [255, 255, 255],
+            "border": [100, 100, 180]
+        },
+        "accent": [120, 100, 200]
+    },
+    "fonts": {
+        "title": {
+            "family": "JetBrainsMonoNerdFont-Bold.ttf",
+            "size": 64
+        },
+        "subtitle": {
+            "family": "JetBrainsMonoNerdFont-Regular.ttf",
+            "size": 24
+        },
+        "button": {
+            "family": "JetBrainsMonoNerdFont-Regular.ttf",
+            "size": 28
+        }
+    },
+    "button": {
+        "width": 300,
+        "height": 50,
+        "border_radius": 8,
+        "border_width": 2,
+        "spacing": 15
+    },
+    "background_image": "assets/images/menu_bg.jpg"
+}

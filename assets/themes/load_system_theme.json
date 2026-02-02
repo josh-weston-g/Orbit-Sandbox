@@ -1,0 +1,84 @@
+{
+    "name": "Load System Theme",
+    "colors": {
+        "background": [15, 15, 30],
+        "title": [255, 255, 255],
+        "title_shadow": [80, 80, 160],
+        "subtitle": [180, 180, 200],
+        "button": {
+            "normal": [40, 40, 80],
+            "hover": [60, 60, 120],
+            "pressed": [30, 30, 60],
+            "text": [255, 255, 255],
+            "border": [100, 100, 180]
+        },
+        "system_button": {
+            "normal": [35, 45, 70],
+            "hover": [50, 65, 100],
+            "pressed": [25, 35, 55],
+            "text": [220, 230, 255],
+            "border": [80, 100, 150]
+        },
+        "container": {
+            "background": [20, 25, 45],
+            "border": [60, 70, 120],
+            "header": [35, 40, 70],
+            "header_text": [200, 210, 240]
+        },
+        "scrollbar": {
+            "track": [25, 30, 55],
+            "thumb": [70, 80, 130],
+            "thumb_hover": [90, 100, 160]
+        },
+        "accent": [120, 100, 200]
+    },
+    "fonts": {
+        "title": {
+            "family": "JetBrainsMonoNerdFont-Bold.ttf",
+            "size": 48
+        },
+        "subtitle": {
+            "family": "JetBrainsMonoNerdFont-Regular.ttf",
+            "size": 20
+        },
+        "button": {
+            "family": "JetBrainsMonoNerdFont-Regular.ttf",
+            "size": 26
+        },
+        "system_button": {
+            "family": "JetBrainsMonoNerdFont-Regular.ttf",
+            "size": 20
+        },
+        "container_header": {
+            "family": "JetBrainsMonoNerdFont-Bold.ttf",
+            "size": 22
+        }
+    },
+    "button": {
+        "width": 260,
+        "height": 45,
+        "border_radius": 8,
+        "border_width": 2,
+        "spacing": 12
+    },
+    "system_button": {
+        "width": 240,
+        "height": 40,
+        "border_radius": 6,
+        "border_width": 1,
+        "spacing": 8
+    },
+    "container": {
+        "border_radius": 10,
+        "border_width": 2,
+        "header_height": 40,
+        "padding": 15,
+        "spacing": 30
+    },
+    "scrollbar": {
+        "width": 10,
+        "border_radius": 5,
+        "padding": 5
+    },
+    "background_image": "assets/images/menu_bg.jpg"
+}

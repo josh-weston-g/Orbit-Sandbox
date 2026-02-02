@@ -4,6 +4,7 @@ import random
 from math import ceil
 from orbit.simulation import Simulation
 from orbit.loader import SystemLoader
+from ui.views import MainMenuView, LoadSystemView
 
 # Resolution mapping
 RESOLUTION_MAP = {
@@ -24,125 +25,61 @@ BODY_COLORS = [
     (0, 255, 255),    # Cyan
 ]
 
-def show_menu():
-    """Show a simple menu to choose orbital scenario. Returns system path or None."""
-    pygame.init()
-    
-    # Get available systems
-    available_systems = SystemLoader.list_systems("data/systems")
-    
-    # Calculate window height based on number of systems
-    num_systems = len(available_systems) if available_systems else 1
-    title_space = 100  # Space for title at top
-    exit_button_space = 100  # Space for exit button at bottom
-    button_width = 400
-    button_height = 60
-    button_x = 150
-    button_spacing = 70
-    start_y = 100
-    window_height = title_space + (num_systems * button_spacing) + exit_button_space
-    
-    screen = pygame.display.set_mode((700, window_height))
-    pygame.display.set_caption("Orbit Simulator - Choose Scenario")
 
-    # Load fonts
-    try:
-        font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 32)
-        title_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Bold.ttf", 48)
-    except FileNotFoundError:
-        print("⚠ JetBrains Mono Nerd Font not found, using system font")
-        font = pygame.font.Font(None, 32)
-        title_font = pygame.font.Font(None, 48)
-
-    # Create buttons dynamically from available systems
-    buttons = {}
-    for i, (system_name, system_path) in enumerate(available_systems):
-        button_y = start_y + (i * button_spacing)
-        buttons[system_name] = {
-            'rect': pygame.Rect(button_x, button_y, button_width, button_height),
-            'path': system_path,
-            'display_name': system_name.replace('_', ' ').title()
-        }
-    
-    # Add exit button at the bottom
-    exit_y = start_y + (len(available_systems) * button_spacing) + 30
-    buttons['exit'] = {
-        'rect': pygame.Rect(button_x, exit_y, button_width, button_height),
-        'path': None,
-        'display_name': 'Exit'
-    }
-
-    button_color = (70, 70, 70)
-    hover_color = (100, 100, 100)
-    text_color = (255, 255, 255)
-    clock = pygame.time.Clock()
-    running = True
-
-    while running:
-        mouse_pos = pygame.mouse.get_pos()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                pygame.quit()
-                return None
+def show_menu(screen):
+    """Show the main menu and handle navigation. Returns system path or None."""
+    while True:
+        # Show main menu
+        main_menu = MainMenuView(screen)
+        action = main_menu.run()
+        
+        if action == 'exit' or action is None:
+            return None
+        elif action == 'load_system':
+            # Show load system view
+            load_view = LoadSystemView(screen)
+            result = load_view.run()
             
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                for system_name, button_data in buttons.items():
-                    if button_data['rect'].collidepoint(mouse_pos):
-                        if system_name == 'exit':
-                            pygame.quit()
-                            return None
-                        else:
-                            pygame.quit()
-                            return button_data['path']  # Return the file path of the selected system
-                    
-        screen.fill((30, 30, 30))
-
-        title_text = title_font.render("Choose Orbital Scenario", True, text_color)
-        title_rect = title_text.get_rect(center=(350, 50))  # Fixed from (350, 30)
-        screen.blit(title_text, title_rect)
-
-        screen.fill((30, 30, 30))
-
-        # Draw title
-        title_text = title_font.render("Choose Orbital Scenario", True, text_color)
-        title_rect = title_text.get_rect(center=(350, 50))  # Fixed from (350, 30)
-        screen.blit(title_text, title_rect)
-
-        # If no systems found, show error message
-        if not available_systems:
-            error_text = font.render("No systems found in data/systems/", True, (255, 100, 100))
-            error_rect = error_text.get_rect(center=(350, 300))
-            screen.blit(error_text, error_rect)
-        else:
-            # Draw buttons
-            for system_name, button_data in buttons.items():
-                rect = button_data['rect']
-                color = hover_color if rect.collidepoint(mouse_pos) else button_color
-                pygame.draw.rect(screen, color, rect)
-                pygame.draw.rect(screen, text_color, rect, 2)
-                
-                # Use display_name for button text
-                text = font.render(button_data['display_name'], True, text_color)
-                text_rect = text.get_rect(center=rect.center)
-                screen.blit(text, text_rect)
-
-        pygame.display.flip()
-        clock.tick(60)
+            if result is None:
+                return None
+            elif result == 'back':
+                continue  # Go back to main menu
+            else:
+                return result  # Return selected system path
+        elif action == 'settings':
+            # Settings not implemented yet, just go back to menu
+            continue
 
 
 def run_visualization(resolution):
     """Run the orbit simulation visualization using Pygame."""
+    pygame.init()
+    
+    # Set up the display based on resolution
+    if resolution == 'auto':
+        display_info = pygame.display.Info()
+        window_width, window_height = display_info.current_w, display_info.current_h
+        screen = pygame.display.set_mode((window_width, window_height), pygame.NOFRAME)
+    else:
+        window_width, window_height = RESOLUTION_MAP[resolution]
+        screen = pygame.display.set_mode((window_width, window_height))
+    
+    pygame.display.set_caption("Orbit Sandbox")
+    
     # Show menu to select system
-    system_path = show_menu()
+    system_path = show_menu(screen)
     if system_path is None:
+        pygame.quit()
         return  # User chose to exit
 
-    
+    # Run the simulation
+    run_simulation(screen, system_path, resolution, window_width, window_height)
+
+
+def run_simulation(screen, system_path, resolution, window_width, window_height):
+    """Run the actual orbital simulation with the selected system."""
     # Load system from JSON file
     bodies, G, metadata = SystemLoader.load_from_file(system_path)
-    # Initialize Pygame
-    pygame.init()
 
     # Font Setup
     try:
@@ -158,14 +95,6 @@ def run_visualization(resolution):
     # Nerd Font icon codes
     PAUSE_ICON = "\uf04c"
     REWIND_ICON = "\uf04a"
-    # Set resolution
-    if resolution == 'auto':
-        display_info = pygame.display.Info()
-        window_width, window_height = display_info.current_w, display_info.current_h
-        screen = pygame.display.set_mode((window_width, window_height), pygame.NOFRAME)
-    else:
-        window_width, window_height = RESOLUTION_MAP[resolution]
-        screen = pygame.display.set_mode((window_width, window_height))
 
     pygame.display.set_caption("Orbit Simulation Visualization")
 
@@ -204,6 +133,7 @@ def run_visualization(resolution):
     show_grid = False
     show_trail = True
     show_energy = False
+    return_to_menu = False
 
     # Create static starfield background
     starfield = []
@@ -238,9 +168,8 @@ def run_visualization(resolution):
                     camera_x, camera_y = 0.0, 0.0
                     print("Simulation reset.")
                 elif event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    run_visualization(resolution)
-                    return
+                    return_to_menu = True
+                    running = False
                 elif event.key == pygame.K_EQUALS or event.key == pygame.K_KP_PLUS:
                     scale = min(2000, scale * 1.1)
                 elif event.key == pygame.K_MINUS or event.key == pygame.K_KP_MINUS:
@@ -480,4 +409,15 @@ def run_visualization(resolution):
 
         pygame.display.flip()
 
-    pygame.quit()
+    # After simulation loop ends, check if we should return to menu
+    if return_to_menu:
+        # Return to menu by calling run_visualization again
+        show_menu_result = show_menu(screen)
+        if show_menu_result is not None:
+            # Load new system and restart simulation
+            run_simulation(screen, show_menu_result, resolution, window_width, window_height)
+        else:
+            pygame.quit()
+    else:
+        pygame.quit()
+
