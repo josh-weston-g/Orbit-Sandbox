@@ -456,9 +456,9 @@ class LoadSystemView:
 
             # Create tooltip
             try:
-                tooltip_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 20)
+                tooltip_font = pygame.font.Font("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf", 18)
             except FileNotFoundError:
-                tooltip_font = pygame.font.Font(None, 20)
+                tooltip_font = pygame.font.Font(None, 18)
 
             # Word wrap the description to fit in tooltip
             max_tooltip_width = 300
@@ -470,7 +470,7 @@ class LoadSystemView:
                 test_line = ' '.join(current_line + [word])
                 test_surface = tooltip_font.render(test_line, True, (255, 255, 255))
 
-                if test_surface.get_width() <= max_tooltip_width - 20:
+                if test_surface.get_width() <= max_tooltip_width - 24:
                     current_line.append(word)
                 else:
                     if current_line:
@@ -481,8 +481,9 @@ class LoadSystemView:
                 lines.append(' '.join(current_line))
 
             # Calculate tooltip dimensions
-            line_height = 25
-            tooltip_height = len(lines) * line_height + 20
+            line_height = 22
+            padding = 12
+            tooltip_height = len(lines) * line_height + (padding * 2)
             tooltip_width = max_tooltip_width
 
             # Position tooltip to the right of the button
@@ -504,21 +505,28 @@ class LoadSystemView:
             if tooltip_y < 0:
                 tooltip_y = 10
 
-            # Draw semi-transparent background
-            tooltip_surface = pygame.Surface((tooltip_width, tooltip_height))
-            tooltip_surface.set_alpha(150)
-            tooltip_surface.fill((50, 50, 50))  # Dark background
+            # Draw drop shadow
+            shadow_offset = 3
+            shadow_surface = pygame.Surface((tooltip_width, tooltip_height))
+            shadow_surface.set_alpha(80)
+            shadow_surface.fill((0, 0, 0))
+            screen.blit(shadow_surface, (tooltip_x + shadow_offset, tooltip_y + shadow_offset))
+
+            # Draw semi-transparent background with rounded corners
+            tooltip_surface = pygame.Surface((tooltip_width, tooltip_height), pygame.SRCALPHA)
+            pygame.draw.rect(tooltip_surface, (40, 40, 40, 170), 
+                    (0, 0, tooltip_width, tooltip_height), border_radius=8)
             screen.blit(tooltip_surface, (tooltip_x, tooltip_y))
 
-            # Draw border
-            pygame.draw.rect(screen, (100, 100, 100),
-                            (tooltip_x, tooltip_y, tooltip_width, tooltip_height), 2)
+            # Draw border with rounded corners
+            pygame.draw.rect(screen, (80, 80, 80),
+                    (tooltip_x, tooltip_y, tooltip_width, tooltip_height), 2, border_radius=8)
 
             # Draw text lines
-            text_y = tooltip_y + 10
+            text_y = tooltip_y + padding
             for line in lines:
-                text_surface = tooltip_font.render(line, True, (255, 255, 255))
-                screen.blit(text_surface, (tooltip_x + 10, text_y))
+                text_surface = tooltip_font.render(line, True, (230, 230, 230))
+                screen.blit(text_surface, (tooltip_x + padding, text_y))
                 text_y += line_height
 
     def get_next_view(self):
