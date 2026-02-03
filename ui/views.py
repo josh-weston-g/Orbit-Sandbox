@@ -404,20 +404,27 @@ class LoadSystemView:
         currently_hovered = None
         hovered_path = None
 
+        #! Sort both of these to so collide point is not outside box like it currently is. They work, just not perfectly
         # Check default system buttons for hover
         for button, system_path in self.default_buttons:
             if button.rect.collidepoint(mouse_pos):
-                currently_hovered = button
-                hovered_path = system_path
-                break
+                # Get scrollable container's visible rect
+                container_rect = self.default_panel.rect
+                # Check if button rect intersects with visible container area
+                if container_rect.colliderect(button.rect):
+                    currently_hovered = button
+                    hovered_path = system_path
+                    break
 
         # Check custom system buttons for hover if no default button is hovered
         if currently_hovered is None:
             for button, system_path in self.custom_buttons:
                 if button.rect.collidepoint(mouse_pos):
-                    currently_hovered = button
-                    hovered_path = system_path
-                    break
+                    container_rect = self.custom_panel.rect
+                    if container_rect.colliderect(button.rect):
+                        currently_hovered = button
+                        hovered_path = system_path
+                        break
 
         # Update hover state
         if currently_hovered != self.hovered_button:
