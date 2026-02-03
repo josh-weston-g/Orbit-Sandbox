@@ -280,13 +280,16 @@ class LoadSystemView:
 
         # Create scrollable panel on top of background panel
         self.default_panel = pygame_gui.elements.UIScrollingContainer(
-            relative_rect=pygame.Rect((panel_x, default_panel_y + panel_inset), (panel_w , panel_h - 2 * panel_inset)),
-            manager=self.manager
+            relative_rect=pygame.Rect((panel_x + panel_inset, default_panel_y + panel_inset), (panel_w - 2 * panel_inset - 4, panel_h - 2 * panel_inset)),
+            manager=self.manager,
+            allow_scroll_x=False
         )
 
         # Calculate button dimensions
-        button_margin = 25
-        button_w = panel_w - (button_margin * 2)
+        # Buttons should be centered between left edge and scrollbar
+        available_width_for_buttons = panel_w - self.SCROLLBAR_WIDTH - 2 * panel_inset
+        button_margin = 10
+        button_w = available_width_for_buttons - (button_margin * 2)
         button_h = 40
         button_spacing = 10
         button_y = 10
@@ -328,8 +331,9 @@ class LoadSystemView:
 
         # Create scrollable panel on top of background panel
         self.custom_panel = pygame_gui.elements.UIScrollingContainer(
-            relative_rect=pygame.Rect((panel_x, custom_panel_y + panel_inset), (panel_w , panel_h - 2 * panel_inset)),
-            manager=self.manager
+            relative_rect=pygame.Rect((panel_x + panel_inset, custom_panel_y + panel_inset), (panel_w - 2 * panel_inset - 4, panel_h - 2 * panel_inset)),
+            manager=self.manager,
+            allow_scroll_x=False
         )
 
         # Add buttons for each custom system
@@ -483,7 +487,7 @@ class LoadSystemView:
 
             # Position tooltip to the right of the button
             button_rect = self.hovered_button.rect
-            tooltip_x = button_rect.right + 20
+            tooltip_x = button_rect.right + 28
             tooltip_y = button_rect.top
 
             # Make sure tooltip stays on screen
