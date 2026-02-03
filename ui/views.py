@@ -7,6 +7,16 @@ import pygame_gui
 from orbit.loader import SystemLoader
 from ui.visualize import SimulationRunner
 
+def load_background(path, screen_size):
+    """Helper function to load and scale background image."""
+    try:
+        background = pygame.image.load(path).convert()
+        background = pygame.transform.scale(background, screen_size)
+        return background
+    except FileNotFoundError:
+        print(f"Warning: Background image '{path}' not found.")
+        return None
+
 class MainMenuView:
     """Main menu screen with New System, Load System, and Quit options."""
 
@@ -20,13 +30,7 @@ class MainMenuView:
         self._next_view = None
 
         # Load background image
-        try:
-            self.background = pygame.image.load('assets/images/menu_bg.jpg').convert()
-            # Scale it to fit the screen
-            self.background = pygame.transform.scale(self.background, screen_size)
-        except FileNotFoundError:
-            print("Warning: Main menu background image not found.")
-            self.background = None
+        self.background = load_background('assets/images/menu_bg.jpg', screen_size)
 
         screen_w, screen_h = screen_size
 
@@ -198,12 +202,7 @@ class LoadSystemView:
         self.hovered_system_path = None
 
         # Load background image (shared with main menu)
-        try:
-            self.background = pygame.image.load('assets/images/menu_bg.jpg').convert()
-            self.background = pygame.transform.scale(self.background, screen_size)
-        except FileNotFoundError:
-            print("Warning: Menu background image not found.")
-            self.background = None
+        self.background = load_background('assets/images/menu_bg.jpg', screen_size)
 
         # Load systems from both directories
         systems = SystemLoader.list_systems()
