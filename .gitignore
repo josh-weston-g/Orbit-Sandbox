@@ -209,5 +209,3 @@ __marimo__/
 # Orbit-Sandbox ignore rules
 orbit_data.csv
 orbit_visualization.png
-# Ignore custom systems directory so users can add their own systems without affecting version control
-custom_systems/
