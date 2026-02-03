@@ -404,34 +404,34 @@ class LoadSystemView:
         currently_hovered = None
         hovered_path = None
 
-        #! Sort both of these to so collide point is not outside box like it currently is. They work, just not perfectly
         # Check default system buttons for hover
-        for button, system_path in self.default_buttons:
-            if button.rect.collidepoint(mouse_pos):
-                # Get scrollable container's visible rect
-                container_rect = self.default_panel.rect
-                # Check if button rect intersects with visible container area
-                if container_rect.colliderect(button.rect):
-                    currently_hovered = button
-                    hovered_path = system_path
-                    break
-
-        # Check custom system buttons for hover if no default button is hovered
-        if currently_hovered is None:
-            for button, system_path in self.custom_buttons:
+        default_container_rect = self.default_panel.rect
+        if default_container_rect.collidepoint(mouse_pos):  # Mouse is within container bounds
+            for button, system_path in self.default_buttons:
                 if button.rect.collidepoint(mouse_pos):
-                    container_rect = self.custom_panel.rect
-                    if container_rect.colliderect(button.rect):
+                    # Additional check: button must be within visible area
+                    if default_container_rect.colliderect(button.rect):
                         currently_hovered = button
                         hovered_path = system_path
                         break
+
+        # Check custom system buttons for hover if no default button is hovered
+        if currently_hovered is None:
+            custom_container_rect = self.custom_panel.rect
+            if custom_container_rect.collidepoint(mouse_pos):  # Mouse is within container bounds
+                for button, system_path in self.custom_buttons:
+                    if button.rect.collidepoint(mouse_pos):
+                        if custom_container_rect.colliderect(button.rect):
+                            currently_hovered = button
+                            hovered_path = system_path
+                            break
 
         # Update hover state
         if currently_hovered != self.hovered_button:
             # Mouse moved to a different button (or none)
             self.hovered_button = currently_hovered
             self.hovered_system_path = hovered_path
-        
+    
         # If not hovering over anything, reset
         if currently_hovered is None:
             self.hovered_button = None
