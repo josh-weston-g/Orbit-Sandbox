@@ -284,13 +284,12 @@ class LoadSystemView:
             manager=self.manager
         )
 
-        # Calculate button dimensions - account for scrollbar width
-        button_margin = 15
-        # Button width fills container, centered regardless of scrollbar
-        button_w = panel_w - (button_margin * 2) - self.SCROLLBAR_WIDTH
+        # Calculate button dimensions
+        button_margin = 25
+        button_w = panel_w - (button_margin * 2)
         button_h = 40
         button_spacing = 10
-        button_y = button_margin
+        button_y = 10
         
         self.default_buttons = []
 
@@ -334,7 +333,7 @@ class LoadSystemView:
         )
 
         # Add buttons for each custom system
-        button_y = button_margin
+        button_y = 10
         self.custom_buttons = []
 
         for system_name, system_path in self.custom_systems:
