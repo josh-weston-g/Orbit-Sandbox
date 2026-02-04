@@ -315,6 +315,15 @@ class LoadSystemView:
         content_height = button_y + button_margin
         self.default_panel.set_scrollable_area_dimensions((panel_w - self.SCROLLBAR_WIDTH, content_height))
 
+        # Check if scrollbar is needed and adjust button width if so
+        default_needs_scrollbar = content_height > (panel_h - 2 * panel_inset)
+        if not default_needs_scrollbar:
+            # No scrollbar needed, expand button width
+            available_width_for_buttons = panel_w - 2 * panel_inset
+            button_w_adjusted = available_width_for_buttons - (button_margin * 2)
+            for button, system_path in self.default_buttons:
+                button.set_dimensions((button_w_adjusted, button_h))
+
         # Create Custom Systems label
         custom_label = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((panel_x, custom_label_y), (panel_w, label_height)),
@@ -358,6 +367,15 @@ class LoadSystemView:
         # Set the scrollable area dimensions (total content height)
         content_height = button_y + button_margin
         self.custom_panel.set_scrollable_area_dimensions((panel_w - self.SCROLLBAR_WIDTH, content_height))
+
+        # Check if scrollbar is needed and adjust button width if so
+        custom_needs_scrollbar = content_height > (panel_h - 2 * panel_inset)
+        if not custom_needs_scrollbar:
+            # No scrollbar needed, expand button width
+            available_width_for_buttons = panel_w - 2 * panel_inset
+            button_w_adjusted = available_width_for_buttons - (button_margin * 2)
+            for button, system_path in self.custom_buttons:
+                button.set_dimensions((button_w_adjusted, button_h))
 
         # Add back button at the bottom - uses default button style (main button)
         self.btn_back = pygame_gui.elements.UIButton(
