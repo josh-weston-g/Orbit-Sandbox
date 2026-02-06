@@ -156,7 +156,7 @@ The application launches with a **dynamic menu** showing all available systems f
 - **UP/DOWN arrows:** Adjust simulation speed multiplier
 
 **Navigation:**
-- **ESC:** Return to system selection menu
+- **ESC:** Toggle pause menu
 
 ### Creating Custom Systems
 
