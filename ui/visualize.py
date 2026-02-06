@@ -113,9 +113,7 @@ class SimulationRunner:
             self._next_view = 'quit'
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                self._next_view = 'main_menu'  # Return to main menu
-            elif event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE:
                 self.paused = not self.paused
             elif event.key == pygame.K_r:
                 # Reset simulation
@@ -479,8 +477,6 @@ class SimulationRunner:
             
             screen.blit(indicator_bg, (indicator_x, indicator_y))
             screen.blit(indicator_text, (indicator_x + 20, indicator_y + 10))
-
-        pygame.display.flip()
 
     def get_requested_next_view(self):
         """Return next view if users wants to exit (i.e., ESC pressed)."""
