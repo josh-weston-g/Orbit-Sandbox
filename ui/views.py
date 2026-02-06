@@ -563,7 +563,7 @@ class SimulationView:
 
     def __init__(self, screen_size, system_path, clock):
         """Initialize simulation view with the selected system"""
-        self.manager = pygame_gui.UIManager(screen_size)
+        self.manager = pygame_gui.UIManager(screen_size, 'assets/themes/pause_menu_theme.json')
         self._next_view = None
         self.system_path = system_path
         self.screen_size = screen_size
