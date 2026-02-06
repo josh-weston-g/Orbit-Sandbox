@@ -41,7 +41,12 @@ class MainMenuView:
         padding = 40  # Padding around buttons inside panel
         
         # Define button labels - buttons must still be created using pygame_gui.elements.UIButton below
-        button_labels = ["New System", "Load System", "Settings", "Quit"]
+        button_labels = [
+            "New System", 
+            "Load System", 
+            "Settings", 
+            "Quit"
+            ]
         num_buttons = len(button_labels)
         
         # Calculate panel dimensions based on button count
@@ -558,25 +563,188 @@ class SimulationView:
 
     def __init__(self, screen_size, system_path, clock):
         """Initialize simulation view with the selected system"""
-        self.runner = SimulationRunner(screen_size, system_path, clock)
+        self.manager = pygame_gui.UIManager(screen_size)
         self._next_view = None
+        self.system_path = system_path
+        self.screen_size = screen_size
+        self.clock = clock
+
+        # Pause menu state (ESC menu overlay)
+        self.paused = False
+        self.pause_panel = None
+        self.pause_overlay = None
+
+        # Create the simulation runner
+        self.runner = SimulationRunner(screen_size, system_path, clock)
+
+    def _create_pause_menu(self):
+        """Create the pause menu overlay and UI elements."""
+        screen_w, screen_h = self.screen_size
+
+        # Only create overlay if it doesn't exist
+        if self.pause_overlay is None:
+            # Create semi-transparent overlay that covers the entire screen
+            self.pause_overlay = pygame.Surface(self.screen_size)
+            self.pause_overlay.set_alpha(128)  # 50% transparent
+            self.pause_overlay.fill((0, 0, 0))  # Black overlay
+
+        # Button labels - buttons must still be created using pygame_gui.elements.UIButton below 
+        # Currently includes future planned buttons that are not yet implemented (settings, change system, save system)
+        button_labels = [
+            "Resume",
+            "Restart",
+            #! "Settings",
+            #! "Change System",
+            #! "Save System",
+            "Return to Main Menu",
+            "Quit to Desktop"
+        ]
+
+        # Calculate dimensions
+        button_w = 320
+        button_h = 60
+        button_gap = 15
+        padding = 40
+        panel_border = 8
+
+        # Calculate total content height
+        num_buttons = len(button_labels)
+        total_content_height = (num_buttons * button_h) + ((num_buttons - 1) * button_gap)
+
+        # Calculate panel dimensions
+        panel_w = button_w + (padding * 2)
+        panel_h = total_content_height + (padding * 2) + panel_border
+        panel_x = (screen_w - panel_w) // 2
+        panel_y = (screen_h - panel_h) // 2
+
+        # Create panel for pause menu
+        self.pause_panel = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect(panel_x, panel_y, panel_w, panel_h),
+            manager=self.manager
+        )
+
+        # Calculate starting positions for buttons (centered in panel)
+        button_x = padding
+        button_y = padding
+
+        # Create buttons
+        # Create Resume button
+        self.btn_resume = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(button_x, button_y, button_w, button_h),
+            text=button_labels[0],
+            manager=self.manager,
+            container=self.pause_panel
+        )
+
+        # Create Restart button
+        self.btn_restart = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(button_x, button_y + button_h + button_gap, button_w, button_h),
+            text=button_labels[1],
+            manager=self.manager,
+            container=self.pause_panel
+        )
+
+        # Create Return to Main Menu button
+        self.btn_main_menu = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(button_x, button_y + 2 * (button_h + button_gap), button_w, button_h),
+            text=button_labels[2],
+            manager=self.manager,
+            container=self.pause_panel
+        )
+
+        # Create Quit to Desktop button
+        self.btn_quit = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(button_x, button_y + 3 * (button_h + button_gap), button_w, button_h),
+            text=button_labels[3],
+            manager=self.manager,
+            container=self.pause_panel
+        )
 
     def process_event(self, event):
-        """Pass event to simulation runner."""
-        self.runner.handle_event(event)
+        """Handle events for this view."""
+        self.manager.process_events(event)
+        
+        # Check for ESC key to toggle pause menu
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            # Toggle pause menu
+            self.paused = not self.paused
+            
+            if self.paused:
+                # Create pause menu UI only if it doesn't already exist
+                if self.pause_panel is None:
+                    self._create_pause_menu()
+            else:
+                # Destroy pause menu UI
+                if self.pause_panel:
+                    self.pause_panel.kill()
+                    self.pause_panel = None
+                self.pause_overlay = None
+            return
+        
+        # If pause menu is open, don't pass events to simulation
+        if self.paused:
+            # Handle pause menu button events
+            if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                if event.ui_element == self.btn_resume:
+                    # Resume simulation - same as pressing ESC
+                    self.paused = False
+                    if self.pause_panel:
+                        self.pause_panel.kill()
+                        self.pause_panel = None
+                    self.pause_overlay = None
+
+                elif event.ui_element == self.btn_restart:
+                    # Restart simulation-n recreate runner with same system
+                    # First destroy the pause menu
+                    if self.pause_panel:
+                        self.pause_panel.kill()
+                        self.pause_panel = None
+                    self.pause_overlay = None
+                    self.paused = False
+
+                    # Clean up existing runner
+                    del self.runner
+                    # Create new runner with same system
+                    self.runner = SimulationRunner(self.screen_size, self.system_path, self.clock)
+
+                elif event.ui_element == self.btn_main_menu:
+                    # Return to main menu
+                    self._next_view = "main_menu"
+
+                elif event.ui_element == self.btn_quit:
+                    self._next_view = "quit"
+            return
+        else:
+            # Pass events to simulation runner when not paused
+            self.runner.handle_event(event)
 
     def update(self, time_delta):
         """Update simulation physics"""
-        self.runner.update_physics(time_delta)
+        # Only update physics if not paused
+        if not self.paused:
+            self.runner.update_physics(time_delta)
 
-        # Check if runner wants to exit
-        requested = self.runner.get_requested_next_view()
-        if requested:
-            self._next_view = requested
+            # Check if runner wants to exit
+            requested = self.runner.get_requested_next_view()
+            if requested:
+                self._next_view = requested
+        else:
+            # When paused, only update the pause menu UI
+            self.manager.update(time_delta)
 
     def draw(self, screen):
         """Draw simulation."""
+        # Always draw the simulation (frozen if paused)
         self.runner.draw(screen)
+
+        # If paused, draw the overlay and pause menu on top
+        if self.paused:
+            if self.pause_overlay:
+                # Draw semi-transparent overlay
+                screen.blit(self.pause_overlay, (0, 0))
+
+            # Draw pause menu UI
+            self.manager.draw_ui(screen)
 
     def get_next_view(self):
         """Return next view if simulation wants to exit."""
