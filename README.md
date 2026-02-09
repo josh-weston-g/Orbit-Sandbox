@@ -29,6 +29,7 @@ A physics-accurate Newtonian orbital mechanics simulator built from first princi
 - [Known Limitations & Future Work](#known-limitations--future-work)
 - [Contributing](#contributing)
 - [License](#license)
+- [Assets & Credits](#assets--credits)
 - [Author](#author)
 
 ## What it does
@@ -41,42 +42,11 @@ The interactive Pygame visualization provides real-time rendering with zoom, pan
 
 ## Current Features
 
-- 🪐 **Seven pre-built systems:**
-  - Binary Stars - Two equal-mass stars orbiting their barycenter
-  - Sun-Earth Orbit - Earth in perfect circular orbit around the Sun
-  - Elliptical Orbit - Earth in elliptical orbit (70% circular velocity)
-  - Escape Trajectory - Earth escaping the Sun's gravity
-  - Three-Body Triangle - Three equal masses in rotating equilateral configuration
-  - Inner Solar System - Sun with Mercury, Venus, Earth, and Mars
-  - Complete Solar System - All 8 planets from Mercury to Neptune
-- ⚙️ **N-body physics simulation:**
-  - Full N-body gravity (all bodies attract each other)
-  - Newtonian gravity (inverse square law)
-  - Velocity Verlet integration (2nd order accuracy)
-  - Excellent energy conservation
-  - Conserves angular momentum
-  - Rewind capability with full state history
-- 🎮 **Interactive visualization:**
-  - Real-time Pygame rendering
-  - Dynamic menu system
-  - Dynamic window resolution (auto-detection or fixed sizes)
-  - Mouse wheel zoom
-  - Camera panning with WASD keys or click-and-drag
-  - Toggleable grid overlay
-  - Orbital trail rendering
-  - Pause/resume with spacebar
-  - Rewind simulation
-  - Reset simulation with R key
-  - ESC to return to menu
-  - Real-time HUD with time, speed, scale, and energy display
-- 📁 **JSON-based system definitions:**
-  - Easy to create custom systems without coding
-  - Human-readable format with mass, position, velocity for each body
-  - Optional body names and types (star, planet, body)
-  - Drop JSON files in `data/systems/` and they appear in the menu automatically
-- 🎯 **Modular architecture:**
-  - Clean separation between physics, simulation, data, and rendering
-  - Easy to extend with new systems or integrators
+- 🪐 **Seven pre-built systems:** Binary stars, Sun-Earth orbit, elliptical orbit, escape trajectory, three-body triangle, inner solar system, and complete solar system (Mercury to Neptune)
+- ⚙️ **N-body physics:** Full gravitational interactions between all bodies, Velocity Verlet integration (2nd order), excellent energy/momentum conservation, rewind capability
+- 🎮 **Interactive visualization:** Real-time rendering with pygame_gui menus, dynamic resolution, zoom/pan controls, toggleable grid and trails, pause/rewind, real-time HUD
+- 📁 **JSON-based systems:** Create custom systems without coding - drop JSON files in `data/systems/` and they appear automatically
+- 🎯 **Modular architecture:** Clean separation between physics, simulation, UI views, and rendering
 
 ## Project Structure
 
@@ -84,19 +54,22 @@ The codebase is organized with clear separation of concerns:
 
 ```
 Orbit-Sandbox/
-├── main.py                # Entry point - resolution argument handling
+├── main.py                # Entry point - main loop, view management, resolution handling
 ├── requirements.txt       # Python dependencies
 ├── assets/
-│   └── fonts/             # JetBrains Mono Nerd Font (Regular and Bold)
+│   ├── fonts/             # JetBrains Mono Nerd Font (Regular and Bold)
+│   ├── images/            # Images used in the app (Menu Background, etc.)
+│   └── themes/            # JSON files defining styles for menu components
 ├── data/
-│   └── systems/           # JSON system definitions
-│       ├── binary_stars.json
-│       ├── circular_orbit.json
-│       ├── elliptical_orbit.json
-│       ├── escape_trajectory.json
-│       ├── three_body_triangle.json
-│       ├── solar_system_inner.json
-│       └── solar_system.json
+│   ├── default_systems/   # JSON default system definitions
+│   │   ├── binary_stars.json
+│   │   ├── circular_orbit.json
+│   │   ├── elliptical_orbit.json
+│   │   ├── escape_trajectory.json
+│   │   ├── three_body_triangle.json
+│   │   ├── solar_system_inner.json
+│   │   └── solar_system.json
+│   └── custom_systems/    # User-created custom systems
 ├── orbit/
 │   ├── __init__.py
 │   ├── body.py            # Body class - position, velocity, acceleration, mass, name
@@ -106,14 +79,16 @@ Orbit-Sandbox/
 │   └── units.py           # Unit conversions and constants (AU, years, G)
 └── ui/
     ├── __init__.py
-    └── visualize.py       # Pygame visualization, dynamic menu, and user input handling
+    ├── views.py           # UI views using pygame_gui (MainMenuView, LoadSystemView, SimulationView)
+    └── visualize.py       # SimulationRunner class - physics updates, rendering, controls
 ```
 
 Core classes:
 - **Body:** Represents a physical object with position, velocity, acceleration, mass, name, and type
 - **Simulation:** Orchestrates the N-body physics loop, Velocity Verlet integration, state history, and time manipulation
 - **SystemLoader:** Loads orbital systems from JSON files and discovers available systems
-- **Visualization:** Handles Pygame rendering, dynamic menu generation, and interactive controls
+- **Views:** Frame-based UI screens using pygame_gui (MainMenuView, LoadSystemView, SimulationView)
+- **SimulationRunner:** Handles simulation logic, physics updates, rendering, and user controls
 
 ## Installation
 
@@ -140,6 +115,7 @@ Core classes:
 - **Python 3.12 or 3.13** (Python 3.14 not yet supported due to pygame compatibility issues)
 - NumPy
 - Pygame
+- pygame-gui
 
 ## Usage
 
@@ -180,7 +156,7 @@ The application launches with a **dynamic menu** showing all available systems f
 - **UP/DOWN arrows:** Adjust simulation speed multiplier
 
 **Navigation:**
-- **ESC:** Return to system selection menu
+- **ESC:** Toggle pause menu
 
 ### Creating Custom Systems
 
@@ -231,17 +207,15 @@ F = G * m1 * m2 / r²
 For each body, the total acceleration is computed by summing gravitational forces from all other bodies:
 
 ```python
-def _compute_total_acceleration(self, body_index):
+def _compute_total_acceleration(self, body):
     """Compute total gravitational acceleration on a body from all other bodies."""
-    total_accel = np.array([0.0, 0.0])
-    body = self.bodies[body_index]
+    total_accel = np.zeros(2, dtype=float)
     
-    for i, other_body in enumerate(self.bodies):
-        if i != body_index:
-            accel = compute_acceleration(body, other_body, self.G)
-            total_accel += accel
+    for other in self.bodies:
+        if other is not body:  # Skip self
+            total_acc += compute_acceleration(body, other, self.G)
     
-    return total_accel
+    return total_acc
 ```
 
 ### Velocity Verlet Integration
@@ -249,19 +223,22 @@ def _compute_total_acceleration(self, body_index):
 The simulator uses **Velocity Verlet integration** (2nd order accuracy) to update positions and velocities:
 
 ```python
-# 1. Calculate acceleration at current position for all bodies
-old_accelerations = [compute_total_acceleration(i) for i in range(n)]
+# Phase 1: Calculate old accelerations for all bodies
+for body in self.bodies:
+    body.old_acc = self._compute_total_acceleration(body)
 
-# 2. Update positions with half-step correction
-for i, body in enumerate(bodies):
-    body.pos += body.vel * dt + 0.5 * old_accelerations[i] * dt²
+# Phase 2: Update all positions using old acceleratio
+for body in self.bodies:
+    body.pos += body.vel * dt + 0.5 * body.old_acc * dt²
 
-# 3. Calculate acceleration at new positions
-new_accelerations = [compute_total_acceleration(i) for i in range(n)]
+# Phase 3: Calculate new acceleration for all bodies at updated positions
+for body in self.bodies:
+    body.new_acc = self._compute_total_acceleration(body)
 
-# 4. Update velocities using average acceleration
-for i, body in enumerate(bodies):
-    body.vel += 0.5 * (old_accelerations[i] + new_accelerations[i]) * dt
+# Phase 4: Update all velocities using average of old and new accelerations
+for body in self.bodies:
+    body.vel += 0.5 * (body.old_acc + body.new_acc) * dt
+    body.acc = body.new_acc
 ```
 
 This method evaluates acceleration at both the start and end of each timestep, using their average for velocity updates. This provides 2nd-order accuracy and excellent long-term energy conservation, keeping orbits stable over thousands of orbits.
@@ -274,13 +251,13 @@ The simulator maintains a limited state history, allowing full rewind functional
 def save_state(self):
     """Save current state to history for rewind capability."""
     state = [(body.pos.copy(), body.vel.copy()) for body in self.bodies]
-    self.state_history.append(state)
+    self.history.append(state)
 
 def rewind_one_step(self):
     """Rewind simulation by one step."""
     if len(self.state_history) > 1:
-        self.state_history.pop()  # Remove current state
-        state = self.state_history[-1]  # Get previous state
+        self.history.pop()  # Remove current state
+        state = self.history[-1]  # Get previous state
         for i, body in enumerate(self.bodies):
             body.pos, body.vel = state[i][0].copy(), state[i][1].copy()
 ```
@@ -305,7 +282,7 @@ The simulation displays total mechanical energy (kinetic + potential) as a diagn
 - Camera follow modes (follow specific bodies or barycenter)
 - Additional integration methods (RK4, adaptive timestep)
 - More scenario presets (Lagrange points, figure-8 orbits, Pluto)
-- Improved menu system
+- Pause menu (in-sim menu with settings, quit options)
 - Trajectory prediction (show future path)
 
 ## Contributing
@@ -322,6 +299,14 @@ Since this is a work in progress, feel free to open issues with ideas, bugs, or 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Assets & Credits
+
+#### Images 
+- Menu Background: [Vecteezy](https://www.vecteezy.com/free-photos/space)
+
+#### Fonts
+- JetBrains Mono Nerd Font: [Nerd Fonts](https://www.nerdfonts.com/)
 
 ## Author
 
