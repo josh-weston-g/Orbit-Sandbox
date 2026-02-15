@@ -7,25 +7,29 @@
 A physics-accurate Newtonian orbital mechanics simulator built from first principles. Watch planets orbit stars, create elliptical trajectories, or launch escape maneuvers - all emerging naturally from Newton's laws and numerical integration.
 
 > **⚠️ Work in Progress:** This project is actively under development. Features are being added incrementally, and the codebase is evolving. Expect breaking changes and incomplete functionality.
- 
+
 ## Contents
 
 **Getting Started**
+
 - [What it does](#what-it-does)
 - [Installation](#installation)
 - [Requirements](#requirements)
 - [Usage](#usage)
 
 **Features & Documentation**
+
 - [Current Features](#current-features)
 - [Visualization Controls](#visualization-controls)
 - [Creating Custom Systems](#creating-custom-systems)
 
 **Technical Details**
+
 - [Project Structure](#project-structure)
 - [How it Works](#how-it-works)
 
 **Project Info**
+
 - [Known Limitations & Future Work](#known-limitations--future-work)
 - [Contributing](#contributing)
 - [License](#license)
@@ -84,6 +88,7 @@ Orbit-Sandbox/
 ```
 
 Core classes:
+
 - **Body:** Represents a physical object with position, velocity, acceleration, mass, name, and type
 - **Simulation:** Orchestrates the N-body physics loop, Velocity Verlet integration, state history, and time manipulation
 - **SystemLoader:** Loads orbital systems from JSON files and discovers available systems
@@ -93,26 +98,30 @@ Core classes:
 ## Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/josh-weston-g/Orbit-Sandbox.git
    cd Orbit-Sandbox
    ```
 
 2. **Create a virtual environment (recommended):**
+
    ```bash
    python3.12 -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
+
    > **Note:** Use Python 3.12 or 3.13. Python 3.14 has compatibility issues with pygame.
 
 3. **Install Dependencies:**
+
     ```bash
       pip install -r requirements.txt
     ```
 
 ## Requirements
 
-- **Python 3.12 or 3.13** (Python 3.14 not yet supported due to pygame compatibility issues)
+- Python
 - NumPy
 - Pygame
 - pygame-gui
@@ -130,6 +139,7 @@ python main.py --resolution 1440p
 ```
 
 Available resolutions:
+
 - `auto` - Auto-detect display size and use borderless fullscreen (default)
 - `720p` - 1280×720 window
 - `1080p` - 1920×1080 window
@@ -140,22 +150,26 @@ The application launches with a **dynamic menu** showing all available systems f
 ### Visualization Controls
 
 **Camera:**
+
 - **Mouse wheel:** Zoom in/out
 - **WASD keys:** Pan camera (up/left/down/right)
 - **Click and drag:** Pan camera with mouse
 
 **Visualization Toggles:**
+
 - **G:** Toggle grid overlay (0.5 AU spacing)
 - **T:** Toggle orbital trails
 - **E:** Toggle energy display in HUD
 
 **Time Control:**
+
 - **Spacebar:** Pause/resume simulation
 - **LEFT arrow:** Rewind simulation
 - **R:** Reset simulation to initial conditions
 - **UP/DOWN arrows:** Adjust simulation speed multiplier
 
 **Navigation:**
+
 - **ESC:** Toggle pause menu
 
 ### Creating Custom Systems
@@ -187,6 +201,7 @@ Create a JSON file in `data/systems/` with this format:
 ```
 
 **Units:**
+
 - Mass: Solar masses (Sun = 1.0, Earth ≈ 3×10⁻⁶)
 - Position: AU (Astronomical Units, Earth-Sun distance = 1.0)
 - Velocity: AU/year (Earth's orbital speed ≈ 6.28)
@@ -261,6 +276,7 @@ def rewind_one_step(self):
         for i, body in enumerate(self.bodies):
             body.pos, body.vel = state[i][0].copy(), state[i][1].copy()
 ```
+
 > **Note**: The length of the state history can be changed by changing `self.max_history` in `simulation.py`
 
 ### Energy Conservation
@@ -270,12 +286,14 @@ The simulation displays total mechanical energy (kinetic + potential) as a diagn
 ## Known Limitations & Future Work
 
 **Current limitations:**
+
 - 2D simulation (no z-axis)
 - Fixed timestep (not adaptive)
 - No collision detection
 - No relativistic effects
 
 **Planned features:**
+
 - Body colors in JSON (override default color palette)
 - Visual system builder (create systems with mouse clicks)
 - Body labels and selection (click to highlight, show info)
@@ -302,10 +320,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Assets & Credits
 
-#### Images 
+#### Images
+
 - Menu Background: [Vecteezy](https://www.vecteezy.com/free-photos/space)
 
 #### Fonts
+
 - JetBrains Mono Nerd Font: [Nerd Fonts](https://www.nerdfonts.com/)
 
 ## Author
