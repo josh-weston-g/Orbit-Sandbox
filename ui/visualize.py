@@ -6,19 +6,6 @@ from orbit.simulation import Simulation
 from orbit.loader import SystemLoader
 from orbit.units import velocity_to_km_per_s
 
-# Body colors for visualization
-BODY_COLORS = [
-    (255, 215, 0),   # Gold (Sun)
-    (169, 169, 169), # Gray (Mercury)
-    (255, 198, 73),  # Pale yellow (Venus)
-    (100, 149, 237), # Cornflower blue (Earth)
-    (205, 92, 92),   # Indian red (Mars)
-    (210, 180, 140), # Tan (Jupiter)
-    (238, 232, 170), # Pale goldenrod (Saturn)
-    (175, 238, 238), # Pale turquoise (Uranus)
-    (65, 105, 225),  # Royal blue (Neptune)
-]
-
 class SimulationRunner:
     """
     Handles simulation logic, physics updates, and rendering.
@@ -292,7 +279,7 @@ class SimulationRunner:
         if self.show_trail:
             for i, trail in enumerate(self.trails):
                 if len(trail) > 1:
-                    color = BODY_COLORS[i % len(BODY_COLORS)]
+                    color = self.sim.bodies[i].color
                     trail_surface = pygame.Surface((self.window_width, self.window_height), pygame.SRCALPHA)
                     
                     trail_screen = []
@@ -319,7 +306,7 @@ class SimulationRunner:
             body_border_radius = body_radius + 2
             
             # Get color from palette
-            color = BODY_COLORS[i % len(BODY_COLORS)]
+            color = body.color
             
             # Highlight selected body - must be drawn first to appear underneath
             if self.selected_body_index == i:

@@ -1,11 +1,12 @@
 import numpy as np
 
 class Body:
-    def __init__(self, position, velocity, mass, name=None, body_type="body"):
+    def __init__(self, position, velocity, mass, name=None, body_type="body", color=[236, 236, 236]):
         self.pos = np.array(position, dtype=float)   # [x, y]
         self.vel = np.array(velocity, dtype=float)   # [vx, vy]
-        self.acc = np.zeros(2, dtype=float)          # [ax, ay]
-        self.mass = float(mass)                      # scalar
+        self.acc = np.zeros(2, dtype=float)         # [ax, ay]
+        self.mass = float(mass)                     # scalar
+        self.color = color                          # Color for visualization
 
         # Body identification
         self.name = name if name is not None else "Unnamed"

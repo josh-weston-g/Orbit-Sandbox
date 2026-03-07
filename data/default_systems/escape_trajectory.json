@@ -7,14 +7,16 @@
         "position": [0, 0],
         "velocity": [0, 0],
         "name": "Sun",
-        "type": "star"
+        "type": "star",
+        "color": [255, 215, 0]
     },
     {
         "mass": 3.0e-6,
         "position": [1.0, 0],
         "velocity": [0, 10.666649236212803],
         "name": "Earth",
-        "type": "planet"
+        "type": "planet",
+        "color": [100, 149, 237]
     }
     ]
 }

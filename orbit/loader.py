@@ -36,7 +36,8 @@ class SystemLoader:
                 velocity=body_data['velocity'],
                 mass=body_data['mass'],
                 name=body_data.get('name'),   # Optional name
-                body_type=body_data.get('type', 'body')   # Optional type
+                body_type=body_data.get('type', 'body'),   # Optional type
+                color=body_data.get('color', [236, 236, 236]) # Optional color - default to light gray if not provided
             )
             bodies.append(body)
 
