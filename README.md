@@ -115,9 +115,9 @@ Core classes:
 
 3. **Install Dependencies:**
 
-    ```bash
-      pip install -r requirements.txt
-    ```
+   ```bash
+     pip install -r requirements.txt
+   ```
 
 ## Requirements
 
@@ -186,15 +186,17 @@ Create a JSON file in `data/systems/` with this format:
       "mass": 1.0,
       "position": [0, 0],
       "velocity": [0, 0],
-      "name": "Central Star",
-      "type": "star"
+      "name": "Central Star", # Optional - defaults to 'Unnamed'
+      "type": "star",         # Optional - defaults to 'body'
+      "color": [r, g, b]      # Optional - defaults to light grey (236, 236, 236)
     },
     {
       "mass": 3.0e-6,
       "position": [1.0, 0],
       "velocity": [0, 6.283185],
       "name": "Planet",
-      "type": "planet"
+      "type": "planet",
+      "color": [r, g, b]
     }
   ]
 }
@@ -225,11 +227,11 @@ For each body, the total acceleration is computed by summing gravitational force
 def _compute_total_acceleration(self, body):
     """Compute total gravitational acceleration on a body from all other bodies."""
     total_accel = np.zeros(2, dtype=float)
-    
+
     for other in self.bodies:
         if other is not body:  # Skip self
             total_acc += compute_acceleration(body, other, self.G)
-    
+
     return total_acc
 ```
 
@@ -294,7 +296,6 @@ The simulation displays total mechanical energy (kinetic + potential) as a diagn
 
 **Planned features:**
 
-- Body colors in JSON (override default color palette)
 - Visual system builder (create systems with mouse clicks)
 - Body labels and selection (click to highlight, show info)
 - Camera follow modes (follow specific bodies or barycenter)
